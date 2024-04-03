@@ -19,7 +19,7 @@ II Installation de CPLEX:
    
    --> C/C++, Génération de code, Bibliothèque Runtime : DLL multithread (/MD)
    
-   --> Editeur de liens, entrée, Dépendznces supplémentaires : C:\Program Files\IBM\ILOG\CPLEX_Studio221\concert\lib\x64_windows_msvc14\stat_mda\concert.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\cplex2210.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\ilocplex.lib
+   --> Editeur de liens, entrée, Dépendances supplémentaires : C:\Program Files\IBM\ILOG\CPLEX_Studio221\concert\lib\x64_windows_msvc14\stat_mda\concert.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\cplex2210.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\ilocplex.lib
    
    Attention : le nombre 221 est à adapter selon le nom de votre dossier
 
