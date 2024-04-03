@@ -102,12 +102,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;IL_STD;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Program Files\IBM\ILOG\CPLEX_Studio221\concert\include;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>C:\Program Files\IBM\ILOG\CPLEX_Studio221\concert\lib\x64_windows_msvc14\stat_mda\concert.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\cplex2210.lib;C:\Program Files\IBM\ILOG\CPLEX_Studio221\cplex\lib\x64_windows_msvc14\stat_mda\ilocplex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -128,6 +132,33 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="test.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Amino_Acids.h" />
+    <ClInclude Include="Fonction.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Peptide.h" />
+    <ClInclude Include="Protein.h" />
+    <ClInclude Include="Score.h" />
+    <ClInclude Include="Spectrum.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Build_Theoretical_Spectra.cpp" />
+    <ClCompile Include="Compute_Scores.cpp" />
+    <ClCompile Include="Define_Probabilities.cpp" />
+    <ClCompile Include="Fonction.cpp" />
+    <ClCompile Include="In_Silico_Digestion.cpp" />
+    <ClCompile Include="Load_Proteins.cpp" />
+    <ClCompile Include="Load_Scores.cpp" />
+    <ClCompile Include="Load_Spectra.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Peptide.cpp" />
+    <ClCompile Include="Protein.cpp" />
+    <ClCompile Include="Score.cpp" />
+    <ClCompile Include="Simulated_Sample.cpp" />
+    <ClCompile Include="Solve.cpp" />
+    <ClCompile Include="Spectrum.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
