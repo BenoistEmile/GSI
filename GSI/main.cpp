@@ -6,7 +6,7 @@
 //__________________________________________________________________________________________________________
 
 /*
-* Méthode temporaire pour générer des scores sur les arêtes spectres-peptides. Elle m'a servi à réaliser certains tests sur le modèles
+* MÃ©thode temporaire pour gÃ©nÃ©rer des scores sur les arÃªtes spectres-peptides. Elle m'a servi Ã  rÃ©aliser certains tests sur le modÃ¨les
 */
 void compute_score_function(std::vector<Peptide*> &peptides, std::vector<Spectrum*> &spectra, std::vector<Score*> &scores) {
 	srand((unsigned int)time(NULL));
@@ -27,22 +27,23 @@ void compute_score_function(std::vector<Peptide*> &peptides, std::vector<Spectru
 }
 
 /*
-* Il faut commencer par créer une variable de type Model pour pouvoir exécuter les tâches suivantes dessus :
-* - Charger les protéines (Load_Proteins)
-* - Construire les peptides théoriques (In_Silico_Digestion)
-* - Construire les spectres théoriques (Build_Theoretical_Spectra)
-* - Définir les probabilités sur les arêtes protéines-spectres (Define_Probabilities)
-* - Charger des spectres expérimentaux ou générer des spectres simulés (Load_Spectra / Simulated_Sample)
-* - Générer des scores sur les arêtes spectres-peptides (Load_Scores / Compute_Score / Compute_Score_SpecOMS)
-* - Résoudre l'instance courante (Solve)
+* Il faut commencer par crÃ©er une variable de type Model pour pouvoir exÃ©cuter les tÃ¢ches suivantes dessus :
+* - Charger les protÃ©ines (Load_Proteins)
+* - Construire les peptides thÃ©oriques (In_Silico_Digestion)
+* - Construire les spectres thÃ©oriques (Build_Theoretical_Spectra)
+* - DÃ©finir les probabilitÃ©s sur les arÃªtes protÃ©ines-spectres (Define_Probabilities)
+* - Charger des spectres expÃ©rimentaux ou gÃ©nÃ©rer des spectres simulÃ©s (Load_Spectra / Simulated_Sample)
+* - GÃ©nÃ©rer des scores sur les arÃªtes spectres-peptides (Load_Scores / Compute_Score / Compute_Score_SpecOMS)
+* - RÃ©soudre l'instance courante (Solve)
 * - Afficher la solution (Print_Solution)
 * 
-* Chacune de ces étapes possède leur propre fichier source contenant leur documentation
+* Chacune de ces Ã©tapes possÃ¨de leur propre fichier source contenant leur documentation
 */
 int main() {
 
 	/*
 	* Un exemple
+ 	* test
 	*/
 	Model model;
 
