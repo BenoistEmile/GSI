@@ -16,7 +16,7 @@ void Model::Simulated_Sample(std::unordered_map<std::size_t, unsigned int> sampl
             else {
                 positions[*iter2] = 0;
             }
-            const std::vector<Pic*>* pics = (*peptides[*iter2]).Get_Pics(); //.Build_Spectrum();
+            const std::vector<Pic*>* pics = (*peptides[*iter2]).Get_Pics();
             probability = (*peptides[*iter2]).Get_Proteins().at(iter->first)[positions[*iter2]];
             final_probability = error_rate * ((1 - round(probability)) - probability) + probability;
             const Origin* origin = new Origin(*iter2, iter->first, positions[*iter2]);

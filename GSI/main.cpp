@@ -43,11 +43,10 @@ int main() {
 
 	/*
 	* Un exemple
- 	* test
 	*/
 	Model model;
 
-	model.Load_Proteins("uniprot_humain_moitier.fasta");
+	model.Load_Proteins("uniprot_humain_moitie.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.In_Silico_Digestion(0 ,0);
