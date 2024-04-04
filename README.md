@@ -12,15 +12,25 @@ Utilisation de code:
    Tout le code tourne autour du type "Model". Il faut commencer par créer dans la fonction "Main" une variable de type "Model". A partir d'une instance de cette classe, il est possible d'effectuer les tâches suivantes :
    
    1- Charger un fichier de protéines : méthodes "Load_Proteins"
+   
    2- Générer les peptides théoriques : méthodes "In_Silico_Digestion"
+   
    3- Construire les spectres théoriques corresondant aux peptides théoriques : méthode "Build_Theoretical_Spectra"
+   
    4- Définire les probabilités sur les arêtes protéines-peptides : méthodes "Define_Probabilities"
+   
    5- Charger un fichier de spectres expérimentaux : méthodes "Load_Spectra"
+   
    6- Générer des spectres simulés à partir des protéines chargées : méthodes "Simulated_Sample"
+   
    7- Générer des scores sur les arêtes spectres-peptides : méthodes "Compute_Score" et "Compute_Score_SpecOMS"
+   
    8- Générer des scores sur les arêtes spectres-peptides à partir d'un fichier : méthode "Load_Scores"
+   
    9- Calculer une solution : méthode "Solve"
+   
    10- Afficher la solution : méthode "Print_Solution"
+   
    
    Attention : certaines méthodes ne peuvent être appelées que si d'autres l'ont déjà été. De plus, seule l'une des étapes 5 et 6 peut être appliquée (même chose pour 7 et 8).
    
