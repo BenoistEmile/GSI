@@ -3,11 +3,11 @@ Informations générales _______________________________________________________
 
 Présentation global du code:
    
-   Ce code a été réalisé dans le but de tester le modèle "Global Spectrum Interpretation" (GSI) sur des jeux de données simulés ou réels. Nous n'avons pas pour objectif d'en faire un outil utilisable pour le moment. Il s'agit d'un travail en cours et par conséquent, le code risque fortement d'évoluer, ainsi que le modèle GSI lui même.
+   Ce code a été réalisé dans le but de tester le modèle "Global Spectrum Interpretation" (GSI) sur des jeux de données simulés ou réels. Nous n'avons pas pour objectif d'en faire un outil utilisable pour le moment. Il s'agit d'un travail en cours et par conséquent, le code risque fortement d'évoluer, ainsi que le modèle GSI lui-même.
 
 Utilisation de code:
 
-   Cette partie ne fait que résumer les méthodes à utiliser pour tester le modèle mais ne constitue en rien une documentation. La docummentation se trouve dans le code lui-même.
+   Cette partie ne fait que résumer les méthodes à utiliser pour tester le modèle mais ne constitue en rien une documentation. La documentation se trouve dans le code lui-même.
    
    Tout le code tourne autour du type "Model". Il faut commencer par créer dans la fonction "Main" une variable de type "Model". A partir d'une instance de cette classe, il est possible d'effectuer les tâches suivantes :
    
@@ -15,9 +15,9 @@ Utilisation de code:
    
    2- Générer les peptides théoriques : méthodes "In_Silico_Digestion"
    
-   3- Construire les spectres théoriques corresondant aux peptides théoriques : méthode "Build_Theoretical_Spectra"
+   3- Construire les spectres théoriques corresondants aux peptides théoriques : méthode "Build_Theoretical_Spectra"
    
-   4- Définire les probabilités sur les arêtes protéines-peptides : méthodes "Define_Probabilities"
+   4- Définir les probabilités sur les arêtes protéines-peptides : méthodes "Define_Probabilities"
    
    5- Charger un fichier de spectres expérimentaux : méthodes "Load_Spectra"
    
@@ -62,7 +62,7 @@ Mise en place __________________________________________________________________
       
       Attention : le nombre 221 est à adapter selon le nom du dossier
    
-   III Ajouter un dossier "data" à côté les fichiers sources:
+   III Ajouter un dossier "data" à côté des fichiers sources :
    
    --> c'est dans celui-ci que le code devra pouvoir trouver les fichiers à charger.
 
