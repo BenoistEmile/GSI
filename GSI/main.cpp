@@ -46,7 +46,7 @@ int main() {
 	*/
 	Model model;
 
-	model.Load_Proteins("uniprot_humain_moitie.fasta");
+	model.Load_Proteins("uniprot_humain_moitier.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.In_Silico_Digestion(0 ,0);
