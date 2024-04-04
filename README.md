@@ -36,13 +36,13 @@ Utilisation de code:
    
    Il n'existe pour l'instant pas de méthode permettant d'enregistrer la solution dans un fichier mais cela devra très certainement être fait. De même qu'une méthode permettant de définir les probabilités à partir d'un fichier.
 
-Mise en place ____________________________________________________________________________________________________
+Mise en place (! sous visual studio 2022 !) ____________________________________________________________________________________________________
 
    I Choisir la Norme ISO C++20 (/std:c++20):
    
    --> dans les propriétés du projet
    
-   II Installation de CPLEX:
+   II Installation de CPLEX :
    
    1. Installer IBM ILOG CPLEX
       
