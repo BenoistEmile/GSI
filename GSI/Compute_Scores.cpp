@@ -56,7 +56,7 @@ void Model::Compute_Score(unsigned int randoms) {
 	}
 }
 
-void Model::Compute_Score2(unsigned int minimum_number_of_masses, unsigned int maximum_number_of_masses, int accuracy, unsigned int number_of_copies, unsigned int threshold, unsigned int maximum_number_of_edges) {
+void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigned int maximum_number_of_masses, int accuracy, unsigned int number_of_copies, unsigned int threshold, unsigned int maximum_number_of_edges) {
 
 	const std::size_t number_of_spectra = spectra.size();
 	const std::size_t number_of_peptides = peptides.size();

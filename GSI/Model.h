@@ -9,6 +9,10 @@
 #include <vector>
 #include <string>
 
+/*
+* Ce fichier contient la définition du type Model ainsi que du type Solution.
+*/
+
 struct Solution {
     std::unordered_map<std::size_t, float> abundances;
     std::vector<const Identification*> identifications; 
@@ -24,14 +28,23 @@ struct Solution {
     };
     */
 
+    /*
+    * Modifie la quantité associé à une protéine dans la solution
+    */
     void Add_Protein(std::size_t protein ,float abundance) {
         abundances[protein] = abundance;
     };
 
+    /*
+    * Permet d'ajouter une arête sélectionnée dans la solution
+    */
     void Add_Score(const Score* score) {
         identifications.push_back(score->Get_Edge());
     };
 
+    /*
+    * Vide l'entièreté de la solution
+    */
     void Clear() {
         abundances.clear();
         for (const Identification* identification : identifications) {
@@ -40,6 +53,11 @@ struct Solution {
         identifications.clear();
     };
 
+    /*
+    * Permet d'afficher la solution.
+    * On retrouve en premier la liste des protéines sélectionnées avec leurs abondances.
+    * Puis la liste des arêtes sélectionnées (
+    */
     void Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra) const {
         std::cout << "\nSelected proteins :" << std::endl;
         for (auto& couple : abundances) {
@@ -102,7 +120,7 @@ public:
     void Load_Scores(const std::string file_name , std::vector<Score*>(parser)(std::ifstream& file));
     void Compute_Score(void (compute_score_function)(std::vector<Peptide*> &peptides, std::vector<Spectrum*> &spectra, std::vector<Score*> &scores));
     void Compute_Score(unsigned int randoms = 0);
-    void Compute_Score2(unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
+    void Compute_Score_SpecOMS(unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
 
     void Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
 

@@ -4,6 +4,12 @@
 #include <string>
 #include <unordered_map>
 
+/*
+* Ce fichier permet la gestion des acides aminés.
+* Il contient une classe AminoAcid définissant un acide aminé par un ensemble d'attributs.
+* Il contient également une map associant une lettre à un acide aminé.
+*/
+
 class AminoAcid {
 private:
     const std::string name;
