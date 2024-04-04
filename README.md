@@ -3,7 +3,7 @@ Informations générales _______________________________________________________
 
 Présentation global du code:
    
-   Ce code a été réalisé dans le but de tester le modèle "Global Spectrum Interpretation" (GSI) sur des jeux de données simulés ou réels. Nous n'avons pas pour objectif d'en faire un outil utilisable pour le moment. Il s'agit d'un travail en cours et par conséquent, le code risque fortement d'évoluer, ainsi que le modèle GSI lui-même.
+   Ce code a été réalisé dans le but de tester le modèle "Global Spectrum Interpretation" (GSI) sur des jeux de données simulés ou réels. Nous n'avons pas pour objectif d'en faire un outil utilisable pour le moment. Il s'agit d'un travail en cours et par conséquent, le code risque fortement d'évoluer, ainsi que le modèle GSI lui-même. Il n'y a pour l'instant aucune gestion d'erreurs mise en place.
 
 Utilisation de code:
 
