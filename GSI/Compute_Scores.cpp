@@ -62,7 +62,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 	const std::size_t number_of_peptides = peptides.size();
 	std::unordered_map<double, std::vector<std::size_t>*> buckets_cluster;
 
-	std::cout << "etape 1" << std::endl;
+	//std::cout << "etape 1" << std::endl;
 	/*
 	* Filling the bucket cluster with theoretical spectra
 	*/
@@ -82,7 +82,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 		delete pics;
 	}
 
-	std::cout << "etape 2" << std::endl;
+	//std::cout << "etape 2" << std::endl;
 	/*
 	* Filling the bucket cluster with experimental spectra
 	*/
@@ -121,7 +121,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 		delete selected_pics;
 	}
 
-	std::cout << "etape 3" << std::endl;
+	//std::cout << "etape 3" << std::endl;
 	/*
 	* Sorting and cleaning the bucket cluster
 	*/
@@ -135,7 +135,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 		}
 	}
 
-	std::cout << "etape 4 : " << sorted_buckets.size() << std::endl;
+	//std::cout << "etape 4 : " << sorted_buckets.size() << std::endl;
 	/*
 	* Creation of the specTree
 	*/
@@ -204,7 +204,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 			}
 		}
 
-		std::cout << "etape 5" << std::endl;
+		//std::cout << "etape 5" << std::endl;
 		/*
 		* Extraction of pairs
 		*/
@@ -254,7 +254,8 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 			}
 			pairs.clear();
 		}
-		std::cout << "etape 6" << std::endl;
+
+		//std::cout << "etape 6" << std::endl;
 		/*
 		* Cleaning step
 		*/
