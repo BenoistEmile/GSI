@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# VS Code config files
+.vscode/tasks.json
+.vscode/settings.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json
