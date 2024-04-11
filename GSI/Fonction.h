@@ -4,24 +4,25 @@
 #include <string>
 #include <vector>
 //#include <unordered_map>
+#include <sys/stat.h>
 
 /*
-* Ce fichier possède un ensemble de fonctions utilitaires
+* Ce fichier possï¿½de un ensemble de fonctions utilitaires
 */
 
 
 /*
-* Renvoie vrai si et seulement si la séquence d'acides aminés correspond à une séquence valide, c'est à dire avec des acides aminés valides.
+* Renvoie vrai si et seulement si la sï¿½quence d'acides aminï¿½s correspond ï¿½ une sï¿½quence valide, c'est ï¿½ dire avec des acides aminï¿½s valides.
 */
 bool Is_Valid_Sequence(std::string sequence);
 
 /*
-* Effectue un arrondi sur la valeur en paramètre avec un nombre de chiffres après la virgule donné.
+* Effectue un arrondi sur la valeur en paramï¿½tre avec un nombre de chiffres aprï¿½s la virgule donnï¿½.
 */
 double Round_Precision(double value, unsigned int precision);
 
 /*
-* Affiche les éléments d'un vecteur
+* Affiche les ï¿½lï¿½ments d'un vecteur
 */
 template<typename T>
 void PrintVector(std::vector<T> vector) {
@@ -40,7 +41,7 @@ void PrintVector(std::vector<T> vector) {
 };
 
 /*
-* Affiche les éléments situés aux adresses présent dans un vecteur
+* Affiche les ï¿½lï¿½ments situï¿½s aux adresses prï¿½sent dans un vecteur
 */
 template<typename T>
 void PrintVector2(std::vector<T> vector) {
@@ -57,3 +58,8 @@ void PrintVector2(std::vector<T> vector) {
     }
     std::cout << std::endl;
 };
+
+/*
+* Renvoie vrai si le fichier indiquÃ© existe.
+*/
+bool fileExists(const std::string& filename);

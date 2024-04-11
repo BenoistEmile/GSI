@@ -70,6 +70,8 @@ int main() {
 
 	model.Print_Solution();
 
+	model.Save_solution("test_save.txt");
+
 	return 0;
 
 }
