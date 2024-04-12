@@ -90,9 +90,9 @@ struct Solution {
     /*
     Enregistre la solution dans un fichier texte.
     */
-    void Save(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, const std::string file_name) const {
+    void Save(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, const std::string file_name, bool overwrite = false) const {
         std::ofstream output_file;
-        if (!fileExists(std::filesystem::current_path().generic_string() + "/solution/" + file_name)) {
+        if (!fileExists(std::filesystem::current_path().generic_string() + "/solution/" + file_name) || overwrite) {
             output_file.open(std::filesystem::current_path().generic_string() + "/solution/" + file_name);
             output_file << "Selected proteins :" << std::endl;
             for (auto& couple : abundances) {
@@ -112,6 +112,7 @@ struct Solution {
                 output_file << compteur << std::endl;
             }
             output_file.close();
+            std::cout << "Saved solution to " << file_name << std::endl;
         }
         else {
             std::cout << "ERROR : There already is a file named : " << file_name << std::endl;
@@ -232,8 +233,8 @@ public:
     /*
     * Enregistre la solution
     */
-    void Save_solution(std::string file_name) const {
-        solution.Save(peptides, spectra, file_name);
+    void Save_solution(std::string file_name, bool overwrite = false) const {
+        solution.Save(peptides, spectra, file_name, overwrite);
     }
 
     //void Evaluate_Solution();
