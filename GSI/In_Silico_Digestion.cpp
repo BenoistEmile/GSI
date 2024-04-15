@@ -80,20 +80,24 @@ void Model::In_Silico_Digestion(std::vector<std::string>(digest_function)(const 
     }
 }
 
-void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_amino_acids ,int maximum_number_of_amino_acids) {
+void Model::In_Silico_Digestion(std::string file_name, int minimum_number_of_amino_acids ,int maximum_number_of_amino_acids) {
     std::unordered_map<std::string, std::size_t>::const_iterator position;
     std::size_t cut;
     std::size_t previous_cut;
     std::vector<std::string> sequences;
     std::string sequence;
+    std::vector<std::string> n_terms;
+    std::vector<std::string> c_terms;
     std::string n_term;
     std::string c_term;
     std::ofstream output_file;
+    output_file.open(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name + ".csv");
+    output_file << "peptide,nterm,cterm,miss1,miss2,label,protein_id,peptide_id" << std::endl;
     for (std::size_t i = 0; i < proteins.size(); ++i) {
         if (!(*proteins[i]).Is_Digested()) {
-            output_file.open(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_prefix + "_" + std::to_string(i) + ".csv");
-            output_file << "peptide,nterm,cterm,miss1,miss2,label" << std::endl;
             sequences = {};
+            n_terms = {};
+            c_terms = {};
             sequence = (*proteins[i]).Get_Sequence();
             cut = 0;
             previous_cut = 0;
@@ -109,6 +113,7 @@ void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_a
                 if (n_term.length() < 15) {
                     n_term += std::string(15 - n_term.length(), 'Z');
                 }
+                n_terms.push_back(n_term);
                 if (cut < 8) {
                     c_term = std::string(8 - cut, 'Z') + sequence.substr(cut, 7 + cut);
                 }
@@ -118,10 +123,9 @@ void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_a
                 if (c_term.length() < 15) {
                     c_term += std::string(15 - c_term.length(), 'Z');
                 }
-                output_file << sequence.substr(previous_cut, cut - previous_cut) << ',' << n_term << ',' << c_term << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown" << std::endl;
+                c_terms.push_back(c_term);
                 previous_cut = cut;
             }
-            output_file.close();
             for (std::size_t j = 0; j < sequences.size(); ++j) {
                 if (sequences[j].size() >= minimum_number_of_amino_acids && (maximum_number_of_amino_acids == 0 || (sequences[j].size() <= maximum_number_of_amino_acids))) {
                     position = peptides_sequences.find(sequences[j]);
@@ -130,13 +134,16 @@ void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_a
                         (*proteins[i]).Add_Peptide(peptides.size());
                         peptides.push_back(new Peptide(peptides.size(), sequences[j]));
                         peptides.back()->Add_Protein(i);
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown," << i << "," << peptides.back()->Get_Id() << std::endl;
                     }
                     else {
                         (*proteins[i]).Add_Peptide(position->second);
                         peptides[position->second]->Add_Protein(i);
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown," << i << "," << peptides[position->second]->Get_Id() << std::endl;
                     }
                 }
             }
         }
     }
+    output_file.close();
 }
