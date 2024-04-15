@@ -92,7 +92,7 @@ void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_a
     for (std::size_t i = 0; i < proteins.size(); ++i) {
         if (!(*proteins[i]).Is_Digested()) {
             output_file.open(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_prefix + "_" + std::to_string(i) + ".csv");
-            output_file << "peptide,nterm,cterm,miss1,miss2" << std::endl;
+            output_file << "peptide,nterm,cterm,miss1,miss2,label" << std::endl;
             sequences = {};
             sequence = (*proteins[i]).Get_Sequence();
             cut = 0;
@@ -118,7 +118,7 @@ void Model::In_Silico_Digestion(std::string file_prefix, int minimum_number_of_a
                 if (c_term.length() < 15) {
                     c_term += std::string(15 - c_term.length(), 'Z');
                 }
-                output_file << sequence.substr(previous_cut, cut - previous_cut) << ',' << n_term << ',' << c_term << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ" << std::endl;
+                output_file << sequence.substr(previous_cut, cut - previous_cut) << ',' << n_term << ',' << c_term << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown" << std::endl;
                 previous_cut = cut;
             }
             output_file.close();
