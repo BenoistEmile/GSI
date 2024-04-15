@@ -367,3 +367,4 @@ FodyWeavers.xsd
 .vscode/settings.json
 .vscode/launch.json
 .vscode/c_cpp_properties.json
+GSI/data/digestion/

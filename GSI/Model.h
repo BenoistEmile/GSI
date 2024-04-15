@@ -152,6 +152,11 @@ public:
     * La fonction de digestion prend un std::string& (s�quence de prot�ine) en param�tre et renvoie un std::vector<std::string> (vecteur de s�quences de peptide)
     */
     void In_Silico_Digestion(std::vector<std::string>(digest_function)(const std::string& sequence) ,int minimum_number_of_amino_acids = 7,int maximum_number_of_amino_acids = 7);
+    /*
+    * Effectue la digestion in-silico des protéines avec de la trypsine. Seuls les peptides dont la taille respecte les limites en paramètre sont générés.
+    * Génère un fichier contenant les peptides générés (au format utilisé par DbyDeep).
+    */
+    void In_Silico_Digestion(std:: string file_prefix, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
 
     /*
     * G�n�re les spectres th�oriques � partir des spectres th�oriques avec la possibilit� d'ajouter des modifications.
