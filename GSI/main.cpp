@@ -46,16 +46,17 @@ int main() {
 	*/
 	Model model;
 
-	model.Load_Proteins("uniprot_humain_moitie.fasta");
+	model.Load_Proteins("uniprot_humain_5_prot.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
-	model.In_Silico_Digestion(0 ,0);
+	model.In_Silico_Digestion("test_digestion", 0 ,0);
 	std::cout << "proteins digested : " << model.Number_Of_Peptides() << std::endl;
 
 	model.Build_Theoretical_Spectra();
 	std::cout << "theoretical spectra built : " << model.Number_Of_Peptides() << std::endl;
 
-	model.Define_Probabilities(0.2f);
+	model.Define_Probabilities(std::string("test_result.csv"));
+	// model.Define_Probabilities(0.2f);
 	std::cout << "probabilities defined" << std::endl;
 
 	std::unordered_map<std::size_t, unsigned int> sample = {{2 , 5} ,{3 , 2}};
@@ -70,7 +71,7 @@ int main() {
 
 	model.Print_Solution();
 
-	model.Save_solution("test_save.txt");
+	//model.Save_solution("test_save.txt");
 
 	return 0;
 

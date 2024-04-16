@@ -177,6 +177,11 @@ public:
     * Voir la classe Peptide pour avoir des d�tails sur la fa�on dont on peut attribuer les probabilit�s.
     */
     void Define_Probabilities(void (define_probabilities_function)(std::vector<Protein*> proteins, std::vector<Peptide*> peptides));
+    /*
+    * Définit les probabilités sur les arêtes protéines-peptides à partir d'un fichier csv en paramètre.
+    * Le fichier csv doit contenir les colonnes suivantes : protein_id, peptide_id, Prob.
+    */
+    void Define_Probabilities(const std::string file_name);
 
     /*
     * Charge le fichier de spectres en param�tre au format ms2
