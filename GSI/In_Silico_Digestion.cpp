@@ -104,8 +104,8 @@ void Model::In_Silico_Digestion(std::string file_name, int minimum_number_of_ami
             while (cut < sequence.size()) {
                 cut = Next_Cut(sequence, cut) + 1;
                 sequences.push_back(sequence.substr(previous_cut, cut - previous_cut));
-                if (previous_cut < 7) {
-                    n_term = std::string(7 - previous_cut, 'Z') + sequence.substr(previous_cut, 8 + previous_cut);
+                if (previous_cut < 8) {
+                    n_term = std::string(8 - previous_cut, 'Z') + sequence.substr(0, 7 + previous_cut);
                 }
                 else {
                     n_term = sequence.substr(previous_cut - 8, 15);
@@ -115,7 +115,7 @@ void Model::In_Silico_Digestion(std::string file_name, int minimum_number_of_ami
                 }
                 n_terms.push_back(n_term);
                 if (cut < 8) {
-                    c_term = std::string(8 - cut, 'Z') + sequence.substr(cut, 7 + cut);
+                    c_term = std::string(7 - cut, 'Z') + sequence.substr(cut, 8 + cut);
                 }
                 else {
                     c_term = sequence.substr(cut - 8, 15);
@@ -128,18 +128,21 @@ void Model::In_Silico_Digestion(std::string file_name, int minimum_number_of_ami
             }
             for (std::size_t j = 0; j < sequences.size(); ++j) {
                 if (sequences[j].size() >= minimum_number_of_amino_acids && (maximum_number_of_amino_acids == 0 || (sequences[j].size() <= maximum_number_of_amino_acids))) {
+                    if (sequences[j].find("U") != std::string::npos || n_terms[j].find("U") != std::string::npos || c_terms[j].find("U") != std::string::npos) {
+                        continue;
+                    }
                     position = peptides_sequences.find(sequences[j]);
                     if (position == peptides_sequences.end()) {
                         peptides_sequences[sequences[j]] = peptides.size();
                         (*proteins[i]).Add_Peptide(peptides.size());
                         peptides.push_back(new Peptide(peptides.size(), sequences[j]));
                         peptides.back()->Add_Protein(i);
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown," << i << "," << peptides.back()->Get_Id() << std::endl;
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << i << "," << peptides.back()->Get_Id() << std::endl;
                     }
                     else {
                         (*proteins[i]).Add_Peptide(position->second);
                         peptides[position->second]->Add_Protein(i);
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,Unknown," << i << "," << peptides[position->second]->Get_Id() << std::endl;
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << i << "," << peptides[position->second]->Get_Id() << std::endl;
                     }
                 }
             }
