@@ -20,3 +20,13 @@ bool Is_Valid_Sequence(std::string sequence) {
 double Round_Precision(double value, unsigned int precision) {
     return round(value * pow(10, precision)) / (pow(10, precision));
 }
+
+bool fileExists(const std::string& filename)
+{
+    struct stat buf;
+    if (stat(filename.c_str(), &buf) != -1)
+    {
+        return true;
+    }
+    return false;
+}
