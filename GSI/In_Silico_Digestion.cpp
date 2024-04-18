@@ -131,6 +131,12 @@ void Model::In_Silico_Digestion(std::string file_name, int minimum_number_of_ami
                     if (sequences[j].find("U") != std::string::npos || n_terms[j].find("U") != std::string::npos || c_terms[j].find("U") != std::string::npos) {
                         continue;
                     }
+                    if (sequences[j].find("B") != std::string::npos || n_terms[j].find("B") != std::string::npos || c_terms[j].find("B") != std::string::npos) {
+                        continue;
+                    }
+                    if (sequences[j].find("Z") != std::string::npos || n_terms[j].find("Z") != std::string::npos || c_terms[j].find("Z") != std::string::npos) {
+                        continue;
+                    }
                     position = peptides_sequences.find(sequences[j]);
                     if (position == peptides_sequences.end()) {
                         peptides_sequences[sequences[j]] = peptides.size();
