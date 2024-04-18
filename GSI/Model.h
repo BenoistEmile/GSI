@@ -159,6 +159,11 @@ public:
     void In_Silico_Digestion(std:: string file_name, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
 
     /*
+    * 
+    */
+    void Peptide_detectability(std::string env_name = "Dby_Deep", std::string digestion_file_name = "digestion") const;
+
+    /*
     * G�n�re les spectres th�oriques � partir des spectres th�oriques avec la possibilit� d'ajouter des modifications.
     * Le param�tre modifications associe des caract�res (acides amin�s) � des masses (modification).
     */
