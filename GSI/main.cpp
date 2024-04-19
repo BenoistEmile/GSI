@@ -60,7 +60,12 @@ int main() {
 	std::cout << "probabilities defined" << std::endl;
 	// std::cout << model.Get_Peptide(207160).Get_Proteins().at(6113)[0] << std::endl;
 
-	std::unordered_map<std::size_t, unsigned int> sample = {{1, 1}, {3, 3}, {4, 4}};
+	// model.Run_Tests_Sample_Data(10, 5, 5, 2, 2, "tests_results");
+	
+	// /*
+
+	std::unordered_map<std::size_t, unsigned int> sample = model.Random_Sample(5, 5, 2, 2);
+	// std::unordered_map<std::size_t, unsigned int> sample = {{1, 1}, {3, 3}, {4, 4}};
 	model.Simulated_Sample(sample);
 	// model.Load_Spectra("110616_yeast_ups_10fmol.ms2");
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
@@ -69,12 +74,16 @@ int main() {
 	model.Compute_Score_SpecOMS();
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
-	model.Solve(0.5f, 0.5f);
-	std::cout << "model solved" << std::endl;
+	int time = model.Solve(0.5f, 0.5f);
+	std::cout << "model solved in " << time << " milliseconds" << std::endl;
 
-	model.Print_Solution();
+	// model.Print_Solution();
 
-	model.Save_solution("test_save.txt", true);
+	// model.Save_Solution("test_save", true);
+
+	model.Analyse_Solution(sample, "analyse");
+
+	/**/
 
 	return 0;
 
