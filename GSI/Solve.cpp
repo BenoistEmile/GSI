@@ -7,7 +7,7 @@
 
 //__________________________________________________________________________________________________________
 
-void Model::Solve(const float psi1, const float psi2) {
+int Model::Solve(const float psi1, const float psi2) {
 
 	std::clock_t c_start = std::clock();
 
@@ -200,38 +200,38 @@ void Model::Solve(const float psi1, const float psi2) {
 	for (auto& couple : edge_per_spectrum) {
 		std::cout << couple.first << " -> " << couple.second << std::endl;
 	}
-	//peptide_spectra : indicé par les peptides. B[peptide] = liste des indice d'aretes utiles liées au peptide               std::vector<std::vector<std::size_t>*>
+	//peptide_spectra : indicï¿½ par les peptides. B[peptide] = liste des indice d'aretes utiles liï¿½es au peptide               std::vector<std::vector<std::size_t>*>
 	std::cout << "________peptide_spectra________" << std::endl;
 	for (auto iter : peptides_spectra) {
 		PrintVector(*iter);
 	}
-	//spectra_peptides : indicé par les spectres. B[spectre] = liste des indices d'aretes utiles liées au spectre			  std::vector<std::vector<std::size_t>*>
+	//spectra_peptides : indicï¿½ par les spectres. B[spectre] = liste des indices d'aretes utiles liï¿½es au spectre			  std::vector<std::vector<std::size_t>*>
 	std::cout << "________spectra_peptides________" << std::endl;
 	for (auto iter : spectra_peptides) {
 		PrintVector(*iter);
 	}
-	//peptides_sure : associe chaque peptide à un nombre d'arêtes déjà sélectionné puisqu'elles sont seules					  std::vector<unsigned int>
+	//peptides_sure : associe chaque peptide ï¿½ un nombre d'arï¿½tes dï¿½jï¿½ sï¿½lectionnï¿½ puisqu'elles sont seules					  std::vector<unsigned int>
 	std::cout << "________peptides_sure________" << std::endl;
 	PrintVector(peptides_sure);
-	//useful_scores : liste des arêtes utiles																				  std::vector<Score>
+	//useful_scores : liste des arï¿½tes utiles																				  std::vector<Score>
 	std::cout << "________useful_scores________" << std::endl;
 	PrintVector(useful_scores);
-	//peptides_index : réatribution des indices des peptides																  std::unordered_map<std::size_t, std::size_t>
+	//peptides_index : rï¿½atribution des indices des peptides																  std::unordered_map<std::size_t, std::size_t>
 	std::cout << "________peptides_index________" << std::endl;
 	for (auto& couple : peptides_index) {
 		std::cout << couple.first << " -> " << couple.second << std::endl;
 	}
-	//spectra_index : réatribution des indices des spectres																	  std::unordered_map<std::size_t, std::size_t>
+	//spectra_index : rï¿½atribution des indices des spectres																	  std::unordered_map<std::size_t, std::size_t>
 	std::cout << "________spectra_index________" << std::endl;
 	for (auto& couple : spectra_index) {
 		std::cout << couple.first << " -> " << couple.second << std::endl;
 	}
-	//proteins_index : réatribution des indices des proteines																  std::unordered_map<std::size_t, std::size_t>
+	//proteins_index : rï¿½atribution des indices des proteines																  std::unordered_map<std::size_t, std::size_t>
 	std::cout << "________proteins_index________" << std::endl;
 	for (auto& couple : proteins_index) {
 		std::cout << couple.first << " -> " << couple.second << std::endl;
 	}
-	//useful_proteins : liste des protéines utiles (indice de base)															  std::vector<std::size_t>
+	//useful_proteins : liste des protï¿½ines utiles (indice de base)															  std::vector<std::size_t>
 	std::cout << "________useful_proteins________" << std::endl;
 	PrintVector(useful_proteins);
 	//peptides_proteins : indice sur les peptides. A1[peptide] = liste de couple (proteine ,prob)							  std::vector<std::vector<std::tuple<std::size_t, float>>*>
@@ -393,7 +393,10 @@ void Model::Solve(const float psi1, const float psi2) {
 
 
 	IloCplex cplex(model);
+	auto start = std::chrono::high_resolution_clock::now();
 	cplex.solve();
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration_tot = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
 #pragma region generate solution
 
@@ -466,4 +469,5 @@ void Model::Solve(const float psi1, const float psi2) {
 #pragma endregion
 
 	std::cout << (std::clock() - c_start) / CLOCKS_PER_SEC << " secondes" << std::endl;
+	return duration_tot;
 }

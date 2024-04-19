@@ -10,6 +10,9 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <cmath>
+#include <algorithm>
+#include <random>
 
 /*
 * Ce fichier contient la d�finition du type Model ainsi que du type Solution.
@@ -54,6 +57,20 @@ struct Solution {
         }
         identifications.clear();
     };
+
+    /*
+    * Indique si une protéine est présente dans la solution.
+    */
+    const bool Is_In_Solution(std::size_t protein) const {
+        return abundances.contains(protein);
+    }
+
+    /*
+    * Accès aux abondances des protéines dans la solution.
+    */
+    const float Get_Abundance(std::size_t protein) const {
+        return abundances.at(protein);
+    }
 
     /*
     * Permet d'afficher la solution.
@@ -231,7 +248,7 @@ public:
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
-    void Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
+    int Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
 
     /*
     * Affiche la solution courante.
@@ -246,6 +263,11 @@ public:
     void Save_solution(std::string file_name, bool overwrite = false) const {
         solution.Save(peptides, spectra, file_name, overwrite);
     }
+
+    /*
+    * Affiche et enregistre (solution/file_name.csv) les résultats obtenus ainsi que l'échantillon synthétique fourni au modèle.
+    */
+    void Analyse_Solution(std::unordered_map<std::size_t, unsigned int> sample, std::string file_name) const;
 
     //void Evaluate_Solution();
 
@@ -266,4 +288,19 @@ public:
     const Peptide& Get_Peptide(std::size_t peptide) const;
     const Spectrum& Get_Spectrum(std::size_t spectrum) const;
     const Score& Get_Score(std::size_t score) const;
+
+    void Add_peptide(std::string sequence) {
+        peptides.push_back(new Peptide(peptides.size(), sequence));
+    }
+
+    /*
+    * Génère un échantillon aléatoire de protéines pour les fonctions SImulated_Sample.
+    * 
+    */
+    std::unordered_map<std::size_t, unsigned int> Random_Sample(unsigned int min_proteins = 1, unsigned int max_proteins = 0, unsigned int min_abundance = 1, unsigned int max_abundance = 10);
+
+    /*
+    * Teste le modèle sur des données synthétiques. Le modèle doit avoir été préparé avec des protéines, des peptides, des arêtes et scores protéine-peptide.
+    */
+   void Run_Tests_Sample_Data(unsigned int n_tests, unsigned int min_proteins = 1, unsigned int max_proteins = 0, unsigned int min_abundance = 1, unsigned int max_abundance = 10, std::string file_name = "test_results");
 };
