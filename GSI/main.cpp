@@ -61,8 +61,6 @@ int main() {
 	// std::cout << model.Get_Peptide(207160).Get_Proteins().at(6113)[0] << std::endl;
 
 	// model.Run_Tests_Sample_Data(10, 5, 5, 2, 2, "tests_results");
-	
-	// /*
 
 	std::unordered_map<std::size_t, unsigned int> sample = model.Random_Sample(5, 5, 2, 2);
 	// std::unordered_map<std::size_t, unsigned int> sample = {{1, 1}, {3, 3}, {4, 4}};
@@ -83,7 +81,11 @@ int main() {
 
 	model.Analyse_Solution(sample, "analyse");
 
-	/**/
+	std::cout << "model solved" << std::endl;
+
+	model.Print_Solution();
+
+	model.Save_Solution("test_save", true);
 
 	return 0;
 

@@ -109,8 +109,10 @@ struct Solution {
     */
     void Save(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, const std::string file_name, bool overwrite = false) const {
         std::ofstream output_file;
-        if (!fileExists(std::filesystem::current_path().generic_string() + "/solution/" + file_name) || overwrite) {
-            output_file.open(std::filesystem::current_path().generic_string() + "/solution/" + file_name);
+        std::filesystem::path file_path = std::filesystem::current_path() / "solution" / file_name;
+        file_path += ".txt";
+        if (!fileExists(file_path) || overwrite) {
+            output_file.open(file_path);
             output_file << "Selected proteins :" << std::endl;
             for (auto& couple : abundances) {
                 output_file << "   - " << couple.first << " : " << couple.second << std::endl;
@@ -260,7 +262,7 @@ public:
     /*
     * Enregistre la solution
     */
-    void Save_solution(std::string file_name, bool overwrite = false) const {
+    void Save_Solution(std::string file_name, bool overwrite = false) const {
         solution.Save(peptides, spectra, file_name, overwrite);
     }
 
