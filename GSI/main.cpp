@@ -46,17 +46,23 @@ int main() {
 	*/
 	Model model;
 
-	model.Load_Proteins("uniprot_humain_5_prot.fasta");
+	// /*
+
+	// model.Load_Proteins("uniprot_humain_moitie.fasta");
+	// model.Load_Proteins("ups1-ups2-sequences.fasta");
+	model.Load_Proteins("yeast+ups1.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
-	model.In_Silico_Digestion("test_digestion", 0 ,40);
+	std::string digestion_file_name = "digestion_yeast";
+	model.In_Silico_Digestion(digestion_file_name, 7 ,25);
+	// model.In_Silico_Digestion(7, 25);
 	std::cout << "proteins digested : " << model.Number_Of_Peptides() << std::endl;
 
 	model.Build_Theoretical_Spectra();
 	std::cout << "theoretical spectra built : " << model.Number_Of_Peptides() << std::endl;
 
-	model.Define_Probabilities(std::string("test_result.csv"));
-	// model.Define_Probabilities(1.0f);
+	model.Define_Probabilities(std::string(digestion_file_name + "_result.csv"));
+	// model.Define_Probabilities(0.2f);
 	std::cout << "probabilities defined" << std::endl;
 	// std::cout << model.Get_Peptide(207160).Get_Proteins().at(6113)[0] << std::endl;
 
@@ -69,18 +75,10 @@ int main() {
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
 	// model.Compute_Score(1);
-	model.Compute_Score_SpecOMS();
+	model.Compute_Score_SpecOMS(0U, 99999U, 2, 2U, 7U, 2U);
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
-	int time = model.Solve(0.5f, 0.5f);
-	std::cout << "model solved in " << time << " milliseconds" << std::endl;
-
-	// model.Print_Solution();
-
-	// model.Save_Solution("test_save", true);
-
-	model.Analyse_Solution(sample, "analyse");
-
+	model.Solve(0.5f, 0.5f);
 	std::cout << "model solved" << std::endl;
 
 	model.Print_Solution();
