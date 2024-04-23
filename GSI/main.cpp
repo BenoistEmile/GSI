@@ -58,6 +58,9 @@ int main() {
 	// model.In_Silico_Digestion(7, 25);
 	std::cout << "proteins digested : " << model.Number_Of_Peptides() << std::endl;
 
+	model.Peptide_detectability("Dby_Deep", digestion_file_name);
+	std::cout << "Peptide detectability computed" << std::endl;
+
 	model.Build_Theoretical_Spectra();
 	std::cout << "theoretical spectra built : " << model.Number_Of_Peptides() << std::endl;
 
