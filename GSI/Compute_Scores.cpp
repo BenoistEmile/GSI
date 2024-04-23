@@ -217,9 +217,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 		pairs.reserve(peptides.size());
 		Noeud* curr2;
 		bool added_to_pairs;
-		// std::cout << number_of_spectra << std::endl;
 		for (std::size_t i = 0; i < number_of_spectra; ++i) {
-			// auto start = std::chrono::high_resolution_clock::now();
 			curr = last[i]; // start <- TP[i]
 			while (curr != nullptr) {
 				curr2 = curr->relative;
@@ -237,12 +235,7 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 				}
 				curr = curr->prec;
 			}
-			// auto start_sort = std::chrono::high_resolution_clock::now();
 			sort(pairs.begin(), pairs.end(), [total_scores](std::size_t i, std::size_t j)-> bool {return total_scores[i] > total_scores[j]; });
-			// auto end_sort = std::chrono::high_resolution_clock::now();
-			// auto duration_tot = std::chrono::duration_cast<std::chrono::milliseconds>(end_sort - start_sort).count();
-			// std::cout << i << ", " << pairs.size() << std::endl;
-			// std::cout << "Sort execution time: " << duration_tot << " ms" << std::endl;
 			k = 0;
 			scores_sum = 0;
 			while (k < pairs.size() && (k < maximum_number_of_edges || maximum_number_of_edges == 0) && total_scores[pairs[k]] >= threshold) {
@@ -264,9 +257,6 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 				total_scores[pairs[0]] = 0;
 			}
 			pairs.clear();
-			// auto end = std::chrono::high_resolution_clock::now();
-			// auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			// std::cout << "Loop execution time: " << duration << " ms" << std::endl;
 		}
 
 		//std::cout << "etape 6" << std::endl;
