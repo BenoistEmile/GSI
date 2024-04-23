@@ -72,6 +72,10 @@ struct Solution {
         return abundances.at(protein);
     }
 
+    const std::unordered_map<std::size_t, float>& Get_abundances() const {
+        return abundances;
+    }
+
     /*
     * Permet d'afficher la solution.
     * On retrouve en premier la liste des prot�ines s�lectionn�es avec leurs abondances.
@@ -267,6 +271,13 @@ public:
     }
 
     /*
+    * Renvoie la solution.
+    */
+    const Solution& Get_Solution() const {
+        return solution;
+    }
+
+    /*
     * Affiche et enregistre (solution/file_name.csv) les résultats obtenus ainsi que l'échantillon synthétique fourni au modèle.
     */
     void Analyse_Solution(std::unordered_map<std::size_t, unsigned int> sample, std::string file_name) const;
@@ -305,4 +316,14 @@ public:
     * Teste le modèle sur des données synthétiques. Le modèle doit avoir été préparé avec des protéines, des peptides, des arêtes et scores protéine-peptide.
     */
    void Run_Tests_Sample_Data(unsigned int n_tests, unsigned int min_proteins = 1, unsigned int max_proteins = 0, unsigned int min_abundance = 1, unsigned int max_abundance = 10, std::string file_name = "test_results");
+
+   /*
+   * Teste le modèle sur des données réelles. => à modifier car on obtient le même résultat à chaque run
+   * Le modèle doit avoir été préparé avec les éléments suivants :
+   * - Protéines (Load_Proteins)
+   * - Peptides (In_Silico_Digestion)
+   * - Arêtes Peptides - Protéines (Define_Probabilities)
+   * - Scores Peptides - Spectres (Load_Spectra + Compute_Score_SpecOMS)
+   */
+   void Run_Tests_Real_Data(unsigned int n_tests, std::string file_name);
 };

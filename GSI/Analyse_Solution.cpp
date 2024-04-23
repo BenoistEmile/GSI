@@ -99,3 +99,72 @@ void Model::Run_Tests_Sample_Data(unsigned int n_tests, unsigned int min_protein
     << "," << mean_error << "," << med_error << "," << min_error << "," << max_error << "," << mean_time << "," << med_time << "," << min_time << "," << max_time << std::endl; // Results
     output_file.close();
 }
+
+//__________________________________________________________________________________________________________
+
+void Model::Run_Tests_Real_Data(unsigned int n_tests, std::string file_name) {
+    std::ofstream output_file;
+    std::filesystem::path file_path = std::filesystem::current_path() / "solution" / file_name;
+    file_path += ".csv";
+    Solution sol;
+    std::unordered_map<std::size_t, float> abundances;
+    std::unordered_map<std::size_t, std::vector<float>> identifications;
+    std::vector<int> times;
+    int min_time, max_time;
+    float mean_time, std_time = 0;
+    float mean_abundance, min_abundance, max_abundance, std_abundance;
+    for (int i = 0; i < n_tests; i++) {
+        times.push_back(this->Solve());
+        sol = this->Get_Solution();
+        abundances = sol.Get_abundances();
+        for (auto iter_id = identifications.begin(); iter_id != identifications.end(); iter_id++) {
+            if (!abundances.contains(iter_id->first)) {
+                iter_id->second.push_back(0);
+            }
+        }
+        for (auto iter_ab = abundances.begin(); iter_ab != abundances.end(); iter_ab++) {
+            if (identifications.contains(iter_ab->first)) {
+                identifications.at(iter_ab->first).push_back(iter_ab->second);
+            }
+            else {
+                identifications[iter_ab->first] = {iter_ab->second};
+            }
+        }
+        this->Clear(false, false, false, false, true);
+    }
+    if (!fileExists(file_path)) {
+        output_file.open(file_path);
+        output_file << "Protein_ID,";
+        for (int i = 0; i < n_tests; i++) {
+            output_file << "run_" << i << ",";
+        }
+        output_file << "mean,std_deviation,min,max" << std::endl;
+        output_file << "time,";
+        mean_time = std::accumulate(times.begin(), times.end(), 0.0) / n_tests;
+        min_time = *std::min_element(times.begin(), times.end());
+        max_time =*std::max_element(times.begin(), times.end());
+        for (auto iter_time = times.begin(); iter_time != times.end(); iter_time++) {
+            output_file << *iter_time << ",";
+            std_time += pow(*iter_time - mean_time, 2);
+        }
+        std_time /= n_tests;
+        output_file << mean_time << "," << std_time << "," << min_time << "," << max_time << std::endl;
+        for (auto iter = identifications.begin(); iter != identifications.end(); iter++) {
+            output_file << iter->first << ",";
+            mean_abundance = std::accumulate(iter->second.begin(), iter->second.end(), 0.0) / n_tests;
+            min_abundance = *std::min_element(iter->second.begin(), iter->second.end());
+            max_abundance =*std::max_element(iter->second.begin(), iter->second.end());
+            std_abundance = 0;
+            for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++) {
+                output_file << *iter2 << ",";
+                std_abundance += pow(*iter2 - mean_abundance, 2);
+            }
+            std_abundance /= n_tests;
+            output_file << mean_abundance << "," << std_abundance << "," << min_abundance << "," << max_abundance << std::endl;
+        }
+        output_file.close();
+    }
+    else {
+        std::cout << "The file " << file_path << "already exists." << std::endl;
+    }
+}
