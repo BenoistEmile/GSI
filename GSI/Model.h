@@ -208,6 +208,7 @@ public:
     /*
     * Définit les probabilités sur les arêtes protéines-peptides à partir d'un fichier csv en paramètre.
     * Le fichier csv doit contenir les colonnes suivantes : protein_id, peptide_id, Prob.
+    * La digestion in-silico doit avoir été réalisée en demandant la génération d'un fichier.
     */
     void Define_Probabilities(const std::string file_name);
 
