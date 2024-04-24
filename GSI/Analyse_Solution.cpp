@@ -168,3 +168,24 @@ void Model::Run_Tests_Real_Data(unsigned int n_tests, std::string file_name) {
         std::cout << "The file " << file_path << "already exists." << std::endl;
     }
 }
+
+//__________________________________________________________________________________________________________
+
+std::ofstream Model::Open_Output_File(std::string file_name) {
+    std::filesystem::path file_path = std::filesystem::current_path() / "solution" / file_name;
+    file_path += ".txt";
+    if (fileExists(file_path)) {
+        unsigned int i = 1;
+        std::string new_file_name = file_name + "_" + std::to_string(i);
+        while (fileExists(file_path.parent_path() / (new_file_name + ".txt"))) {
+            i++;
+            new_file_name = file_name + "_" + std::to_string(i);
+        }
+        file_name = new_file_name;
+        file_path = std::filesystem::current_path() / "solution" / file_name;
+        file_path += ".txt";
+    }
+    std::ofstream output_file;
+    output_file.open(file_path);
+    return output_file;
+}

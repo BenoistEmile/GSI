@@ -300,3 +300,11 @@ void Model::Compute_Score_SpecOMS(unsigned int minimum_number_of_masses, unsigne
 
 
 }
+
+void Model::Compute_Score_SpecOMS(std::ofstream& output_file, unsigned int minimum_number_of_masses, unsigned int maximum_number_of_masses, int accuracy, unsigned int number_of_copies, unsigned int threshold, unsigned int maximum_number_of_edges) {
+	auto start = std::chrono::high_resolution_clock::now();
+	this->Compute_Score_SpecOMS(minimum_number_of_masses, maximum_number_of_masses, accuracy, number_of_copies, threshold, maximum_number_of_edges);
+	auto end = std::chrono::high_resolution_clock::now();
+	output_file << "Computed " << scores.size() << " scores using SpecOMS in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds." << std::endl;
+	output_file << "Parameters : minimum_number_of masses = " << minimum_number_of_masses << ", maximum_number_of_masses = " << maximum_number_of_masses << ", accuracy = " << accuracy << ", number_of_copies = " << number_of_copies << ", threshold = " << threshold << ", maximul_number_of_edges = " << maximum_number_of_edges << std::endl << std::endl;
+}

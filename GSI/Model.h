@@ -141,6 +141,36 @@ struct Solution {
             std::cout << "ERROR : There already is a file named : " << file_name << std::endl;
         }
     }
+
+    /*
+    * Enregistre la solution dans le fichier de log fourni.
+    */
+    void Save(std::vector<Spectrum*> spectra, std::ofstream& output_file, bool proteins = true, bool ident = true) const {
+        output_file << "SOLUTION :" << std::endl;
+        output_file << "Selected " << abundances.size() << " proteins." << std::endl;
+        if (proteins) {
+            output_file << "Selected proteins :" << std::endl;
+            for (auto& couple : abundances) {
+                output_file << "   - " << couple.first << " : " << couple.second << std::endl;
+            }
+        }
+        if (ident) {
+            for (const Identification* identification : identifications) {
+                output_file << *identification << std::endl;
+            }
+        }
+        if (spectra.size() && spectra[0]->Is_Simulated()) {
+            output_file << "\nNumber of wrong selected edges : ";
+            unsigned int compteur = 0;
+            for (const Identification* identification : identifications) {
+                if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+                    compteur++;
+                }
+            }
+            output_file << compteur << std::endl;
+        }
+        output_file << std::endl << std::endl;
+    }
 };
 
 //__________________________________________________________________________________________________________
@@ -158,6 +188,11 @@ public:
     ~Model();
 
     /*
+    * Renvoie un fichier dans lequel les paramètres et résultats de l'exécution du programme pourront être enregistrés.
+    */
+    std::ofstream Open_Output_File(std::string file_name);
+
+    /*
     * Charge le fichier de prot�ines en param�tre. Il doit �tre au format fasta
     */
     void Load_Proteins(const std::string file_name);
@@ -165,6 +200,11 @@ public:
     * Charge le fichier de prot�ines en param�tre avec le parser donn�. Le parser est une fonction prenant un std::ifstream en param�tre et renvoyant un std::vector<Protein*>.
     */
     void Load_Proteins(const std::string file_name, std::vector<Protein*>(parser)(std::ifstream& file));
+    /*
+    * Charge le fichier de protéines en paramètre. Il doit être au format fasta.
+    * Sauvegarde des informations sur le jeu de données chargé (nom du fichier, nombre de protéines) dans le fichier fourni.
+    */
+    void Load_Proteins(const std::string file_name, std::ofstream& output_file);
 
     /*
     * Effectue la digestion in-silico des prot�ines avec de la trypsine. Seuls les peptides dont la taille respecte les limites en param�tre sont g�n�r�s.
@@ -180,6 +220,12 @@ public:
     * Génère un fichier contenant les peptides générés (au format utilisé par DbyDeep).
     */
     void In_Silico_Digestion(std:: string file_name, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
+    /*
+    * Effectue la digestion in-silico des protéines avec de la trypsine. Seuls les peptides dont la taille respecte les limites en paramètre sont générés.
+    * Génère un fichier contenant les peptides générés (au format utilisé par DbyDeep).
+    * Sauvegarde le nombre de peptides générés dans le fichier fourni.
+    */
+    void In_Silico_Digestion(std:: string file_name, std::ofstream& log_file, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
 
     /*
     * 
@@ -211,6 +257,13 @@ public:
     * La digestion in-silico doit avoir été réalisée en demandant la génération d'un fichier.
     */
     void Define_Probabilities(const std::string file_name);
+    /*
+    * Définit les probabilités sur les arêtes protéines-peptides à partir d'un fichier csv en paramètre.
+    * Le fichier csv doit contenir les colonnes suivantes : protein_id, peptide_id, Prob.
+    * La digestion in-silico doit avoir été réalisée en demandant la génération d'un fichier.
+    * Sauvegarde des informations (méthode de génération des probabilités) dans le fichier fourni.
+    */
+    void Define_Probabilities(const std::string file_name, std::ofstream& output_file);
 
     /*
     * Charge le fichier de spectres en param�tre au format ms2
@@ -220,6 +273,11 @@ public:
     * Charge le fichier de spectres en param�tre avec le parser donn�. Le parser prend en param�tre un std::ifstream& et renvoie un std::vector<Spectrum*>.
     */
     void Load_Spectra(const std::string file_name, std::vector<Spectrum*>(parser)(std::ifstream& file));
+    /*
+    * Charge le fichier de spectres en paramètre au format ms2
+    * Sauvegarde des informations sur les spectres (fichier d'origine, nombre de spectres) dans le fichier fourni.
+    */
+    void Load_Spectra(const std::string file_name, std::ofstream& output_file);
 
     /*
     * G�n�re un ensemble de spectres simul�s � partir des prot�ines, des peptides th�oriques et des probabilit�s.
@@ -256,11 +314,21 @@ public:
     * Score calcul�s � partir de l'algorithme SpecOMS. Les param�tres correspondent aux param�tres de SpecOMS. Si le param�tre maximum_number_of_edges est fix� � 0, il est consid�r� � +infiny.
     */
     void Compute_Score_SpecOMS(unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
+    /*
+    * Score calcul�s � partir de l'algorithme SpecOMS. Les param�tres correspondent aux param�tres de SpecOMS. Si le param�tre maximum_number_of_edges est fix� � 0, il est consid�r� � +infiny.
+    * Sauvegarde des informations (paramètres, nombre de scores calculés, méthode utilisée, temps d'exécution) dans le fichier fourni.
+    */
+    void Compute_Score_SpecOMS(std::ofstream& output_file, unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
 
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
     int Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
+    /*
+    * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
+    * Sauvegarde des informations (paramètres, durée d'exécution) dans le fichier fourni.
+    */
+    int Solve(std::ofstream& output_file, float psi1 = 0.5f ,const float psi2 = 0.5f);
 
     /*
     * Affiche la solution courante.
@@ -273,7 +341,13 @@ public:
     * Enregistre la solution
     */
     void Save_Solution(std::string file_name, bool overwrite = false) const {
-        solution.Save(peptides, spectra, file_name, overwrite);
+        solution.Save(spectra, file_name, overwrite);
+    }
+    /*
+    * Enregistre la solution dans le fichier de log fourni.
+    */
+    void Save_Solution(std::ofstream& output_file, bool proteins = true, bool ident = true) const {
+        solution.Save(spectra, output_file, proteins, ident);
     }
 
     /*

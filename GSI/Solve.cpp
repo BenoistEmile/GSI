@@ -471,3 +471,10 @@ int Model::Solve(const float psi1, const float psi2) {
 	std::cout << (std::clock() - c_start) / CLOCKS_PER_SEC << " secondes" << std::endl;
 	return duration_tot;
 }
+
+int Model::Solve(std::ofstream& output_file, float psi1, const float psi2) {
+	int duration = this->Solve(psi1, psi2);
+	output_file << "Solved the model in " << duration << " milliseconds" << std::endl;
+	output_file << "Parameters : psi1 = " << psi1 << ", psi2 = " << psi2 << std:: endl << std::endl;
+	return duration;
+}

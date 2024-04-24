@@ -40,3 +40,29 @@ void Model::Load_Proteins(const std::string file_name, std::vector<Protein*>(par
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
     }
 }
+
+void Model::Load_Proteins(const std::string file_name, std::ofstream& output_file) {
+    std::ifstream file(std::filesystem::current_path().generic_string() + "/data/proteins/" + file_name);
+    if (file) {
+        std::string line;
+        std::string sequence = "";
+        while (getline(file, line)) {
+            if (line[0] == '>') {
+                if (Is_Valid_Sequence(sequence)) {
+                    proteins.push_back(new Protein(proteins.size(), sequence));
+                }
+                sequence = "";
+            }
+            else {
+                sequence += line;
+            }
+        }
+        if (Is_Valid_Sequence(sequence)) {
+            proteins.push_back(new Protein(proteins.size(), sequence));
+        }
+        output_file << "Loaded " << proteins.size() << " proteins from file " << file_name << std::endl << std::endl;
+    }
+    else {
+        std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
+    }
+}

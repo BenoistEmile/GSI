@@ -48,6 +48,8 @@ int main() {
 
 	// /*
 
+	std::ofstream output_file = model.Open_Output_File("result");
+
 	// model.Load_Proteins("uniprot_humain_moitie.fasta");
 	// model.Load_Proteins("ups1-ups2-sequences.fasta");
 	model.Load_Proteins("yeast+ups1.fasta");
