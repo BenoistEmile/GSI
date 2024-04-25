@@ -13,8 +13,7 @@ Spectrum::Spectrum(const std::size_t id, const std::vector<Pic*>* pics) : id(id)
         std::size_t i = 0;
         for (std::size_t j = 1; j < pics->size(); ++j) {
             if ((*pics)[i]->mass > (*pics)[j]->mass) {
-                std::cout << "Error : pics are not sorted." << std::endl;
-                throw "";
+                throw std::string("Error : pics are not sorted.");
             }
             ++i;
         }
@@ -26,8 +25,7 @@ Spectrum::Spectrum(const std::size_t id, const std::vector<Pic*>* pics, const Or
         std::size_t i = 0;
         for (std::size_t j = 1; j < pics->size(); ++j) {
             if ((*pics)[i]->mass > (*pics)[j]->mass) {
-                std::cout << "Error : pics are not sorted." << std::endl;
-                throw "";
+                throw std::string("Error : pics are not sorted.");
             }
             ++i;
         }

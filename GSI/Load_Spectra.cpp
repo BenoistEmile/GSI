@@ -16,7 +16,15 @@ void Model::Load_Spectra(const std::string file_name) {
         while (getline(file, line)) {
             if (line[0] < '0' || line[0] > '9') {
                 if ((*pics).size() != 0) {
-                    spectra.push_back(new Spectrum(spectra.size(), pics));
+                    try {
+                        spectra.push_back(new Spectrum(spectra.size(), pics));
+                    }
+                    catch (std::string& str_err) {
+                        std::cout << str_err << std::endl;
+                        std::cout << "Skipping current spectrum" << std::endl;
+                        pics = new std::vector<Pic*>;
+                        continue;
+                    }
                     pics = new std::vector<Pic*>;
                 }
             }
@@ -27,7 +35,14 @@ void Model::Load_Spectra(const std::string file_name) {
             }
         }
         if ((*pics).size() != 0) {
-            spectra.push_back(new Spectrum(spectra.size(), pics));
+            try {
+                spectra.push_back(new Spectrum(spectra.size(), pics));
+            }
+            catch (std::string& str_err) {
+                std::cout << str_err << std::endl;
+                std::cout << "Skipping current spectrum" << std::endl;
+                pics = new std::vector<Pic*>;
+            }
         }
         else {
             delete pics;
@@ -60,18 +75,39 @@ void Model::Load_Spectra(const std::string file_name, std::ofstream& output_file
         while (getline(file, line)) {
             if (line[0] < '0' || line[0] > '9') {
                 if ((*pics).size() != 0) {
-                    spectra.push_back(new Spectrum(spectra.size(), pics));
+                    try {
+                        spectra.push_back(new Spectrum(spectra.size(), pics));
+                    }
+                    catch (std::string& str_err) {
+                        std::cout << str_err << std::endl;
+                        std::cout << "Skipping current spectrum" << std::endl;
+                        pics = new std::vector<Pic*>;
+                        continue;
+                    }
                     pics = new std::vector<Pic*>;
                 }
             }
             else {
-                mass = std::stod(line, &space_position);
-                intensity = std::stod(line.substr(space_position));
-                pics->push_back(new Pic(mass ,intensity));
+                try {
+                    mass = std::stod(line, &space_position);
+                    intensity = std::stod(line.substr(space_position));
+                    pics->push_back(new Pic(mass ,intensity));
+                }
+                catch (std::invalid_argument& error) {
+                    std::cout << error.what() << std::endl;
+                    std::cout << "Invalid pic, skipping to next pic" << std::endl;
+                }
             }
         }
         if ((*pics).size() != 0) {
-            spectra.push_back(new Spectrum(spectra.size(), pics));
+            try {
+                spectra.push_back(new Spectrum(spectra.size(), pics));
+            }
+            catch (std::string& str_err) {
+                std::cout << str_err << std::endl;
+                std::cout << "Skipping current spectrum" << std::endl;
+                pics = new std::vector<Pic*>;
+            }
         }
         else {
             delete pics;
