@@ -271,7 +271,7 @@ public:
     void Define_Probabilities(const std::string file_name, std::ofstream& output_file);
 
     /*
-    * Charge le fichier de spectres en param�tre au format ms2
+    * Charge le fichier de spectres en param�tre au format ms2/msp
     */
     void Load_Spectra(const std::string file_name);
     /*
@@ -279,7 +279,7 @@ public:
     */
     void Load_Spectra(const std::string file_name, std::vector<Spectrum*>(parser)(std::ifstream& file));
     /*
-    * Charge le fichier de spectres en paramètre au format ms2
+    * Charge le fichier de spectres en paramètre au format ms2/msp
     * Sauvegarde des informations sur les spectres (fichier d'origine, nombre de spectres) dans le fichier fourni.
     */
     void Load_Spectra(const std::string file_name, std::ofstream& output_file);
