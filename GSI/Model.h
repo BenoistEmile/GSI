@@ -279,14 +279,24 @@ public:
     /*
     * Enregistre la solution
     */
-    void Save_Solution(std::string file_name, bool overwrite = false) const {
-        solution.Save(spectra, file_name, overwrite);
+    void Save_Solution(std::string file_name, bool overwrite = false, bool save_proteins = true, bool save_ident = true, bool use_accession = false) const {
+        if (use_accession) {
+            solution.Save(spectra, file_name, proteins, overwrite, save_proteins, save_ident);
+        }
+        else {
+            solution.Save(spectra, file_name, overwrite, save_proteins, save_ident);
+        }
     }
     /*
     * Enregistre la solution dans le fichier de log fourni.
     */
-    void Save_Solution(std::ofstream& output_file, bool proteins = true, bool ident = true) const {
-        solution.Save(spectra, output_file, proteins, ident);
+    void Save_Solution(std::ofstream& output_file, bool save_proteins = true, bool save_ident = true, bool use_accession = false) const {
+        if (use_accession) {
+            solution.Save(spectra, output_file, proteins, save_proteins, save_ident);
+        }
+        else {
+            solution.Save(spectra, output_file, save_proteins, save_ident);
+        }
     }
 
     /*
