@@ -109,7 +109,8 @@ struct Solution {
     }
 
     /*
-    Enregistre la solution dans un fichier csv.
+    * Enregistre la solution dans un fichier csv.
+    * Les numéros d'accession des protéines sont utilisés comme identifiants lors de l'enregistrement des protéines identifiées.
     */
     void Save(std::vector<Spectrum*> spectra, const std::string file_name, bool overwrite = false, bool proteins = true, bool ident = true) const {
         std::ofstream output_file;
@@ -210,6 +211,12 @@ public:
     * Sauvegarde des informations sur le jeu de données chargé (nom du fichier, nombre de protéines) dans le fichier fourni.
     */
     void Load_Proteins(const std::string file_name, std::ofstream& output_file);
+
+    /*
+    * Charge le fichier de protéines en paramètre avec leurs numéros d'accession (si possible). Il doit être au format FASTA.
+    * Sauvegarde des informations sur le jeu de données chargé (nom du fichier, nombre de protéines) dans le fichier fourni.
+    */
+    void Load_Proteins_Accession(const std::string file_name, std::ofstream& output_file);
 
     /*
     * Effectue la digestion in-silico des prot�ines avec de la trypsine. Seuls les peptides dont la taille respecte les limites en param�tre sont g�n�r�s.

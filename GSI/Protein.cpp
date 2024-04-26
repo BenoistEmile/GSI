@@ -3,6 +3,7 @@
 
 //__________________________________________________________________________________________________________
 Protein::Protein(const std::size_t id, const std::string sequence) : id(id), sequence(sequence), peptides({}) {}
+Protein::Protein(const std::size_t id, const std::string sequence, const std::string accession) : id(id), sequence(sequence), accession(accession), peptides({}) {}
 
 Protein::~Protein() {}
 
@@ -33,6 +34,10 @@ const std::string& Protein::Get_Sequence() const {
 
 const std::vector<std::size_t>& Protein::Get_Peptides() const {
     return peptides;
+}
+
+const std::string& Protein::Get_Accession() const {
+    return accession;
 }
 
 //__________________________________________________________________________________________________________
