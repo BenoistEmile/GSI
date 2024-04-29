@@ -36,7 +36,6 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
         output_file.open(file_path);
         output_file << "protein_id,abundance" << std::endl;
         if (save_proteins) {
-            output_file << "Selected proteins :" << std::endl;
             for (auto& couple : abundances) {
                 output_file << couple.first << "," << couple.second << std::endl;
             }
@@ -72,7 +71,6 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
         output_file.open(file_path);
         output_file << "protein_id,abundance" << std::endl;
         if (save_proteins) {
-            output_file << "Selected proteins :" << std::endl;
             for (auto& couple : abundances) {
                 output_file << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
             }
