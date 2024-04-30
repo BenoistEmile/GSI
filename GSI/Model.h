@@ -311,6 +311,11 @@ public:
     */
     void Analyse_Solution(std::unordered_map<std::size_t, unsigned int> sample, std::string file_name) const;
 
+    /*
+    * Fait tourner le modèle avec les valeurs de psi1 et psi2 fournies, et enregistre les résultats dans le fichier fourni.
+    */
+    void Test_Psi_Values(std::unordered_map<float, float> psi_values, std::ofstream& output_file, std::string job_name);
+
     //void Evaluate_Solution();
 
     //void Save() const;

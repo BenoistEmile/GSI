@@ -83,12 +83,31 @@ int main() {
 	model.Compute_Score_SpecOMS(0U, 99999U, 2, 2U, 7U, 2U);
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
-	model.Solve(0.5f, 0.5f);
-	std::cout << "model solved" << std::endl;
+	std::unordered_map<float, float> psi_values = {{1, 1}, {10, 1}, {100, 1}, {1000, 1}};
+	model.Test_Psi_Values(psi_values, output_file, "results_yeast_25fmol");
 
-	model.Print_Solution();
+	// unsigned int count;
+	// for (float i = 0.0; i < 1.001; i += 0.1) {
+	// model.Solve(output_file, 1, 1);
+	// std::cout << "model solved" << std::endl;
 
-	model.Save_Solution("test_save", true);
+	// model.Save_Solution(output_file, false, false, true);
+	// model.Save_Solution("results_yeast_25fmol1", true, true, false, true);
+	// count = 0;
+	// for (auto iter = model.Get_Solution().Get_abundances().begin(); iter != model.Get_Solution().Get_abundances().end(); iter++) {
+	// 	if (iter->first <= 47) {
+	// 		count++;
+	// 	}
+	// }
+	// output_file << count << "/48 proteins from ups identified." << std::endl << std::endl;
+	// model.Clear(false, false, false, false, true);
+	// }
+
+	// model.Print_Solution();
+	
+	output_file.close();
+
+	/**/
 
 	return 0;
 

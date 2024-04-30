@@ -189,3 +189,16 @@ std::ofstream Model::Open_Output_File(std::string file_name) {
     output_file.open(file_path);
     return output_file;
 }
+
+//__________________________________________________________________________________________________________
+
+void Model::Test_Psi_Values(std::unordered_map<float, float> psi_values, std::ofstream& output_file, std::string job_name) {
+    std::string file_name;
+    for (auto iter = psi_values.begin(); iter != psi_values.end(); iter++) {
+        this->Solve(iter->first, iter->second);
+        this->Save_Solution(output_file, false, false, false);
+        file_name = job_name + "_" + std::to_string(iter->first) + "_" + std::to_string(iter->second);
+        this->Save_Solution(file_name, true, true, false, true);
+        this->Clear(false, false, false, false, true);
+    }
+}
