@@ -50,8 +50,11 @@ FN = len(ref_series) - TP
 TN = N_prot - TP - FP - FN
 
 accuracy = (TP + TN) / N_prot
-specificity = TN/ (TN + FN)
-sensitivity = TP / (TP + FP)
+specificity = TN/ (TN + FP)
+sensitivity = TP / (TP + FN)
+FNR = 1 - sensitivity
+PPV = TP / (TP + FP)
+NPV = TN / (TN + FN)
 print(f"""True positives : {TP}
 True negatives : {TN}
 False positives : {FP}
@@ -59,6 +62,9 @@ False negatives : {FN}
 Accuracy : {round(accuracy, 3)}
 Sensitivity : {round(sensitivity, 3)}
 Specificity : {round(specificity, 3)}
+FNR : {round(FNR, 3)}
+PPV : {round(PPV, 3)}
+NPV : {round(NPV, 3)}
 Pearson correlation : {round(pears_corr, 3)}
 Spearman correlation : {round(spear_corr, 3)}""")
 # %%
