@@ -8,19 +8,22 @@ import matplotlib.pyplot as plt
 root_dir = Path.cwd().parent
 data_dir = root_dir / "data"
 sol_dir = root_dir / "solution"
+digestion_dir = data_dir / "digestion"
 # %%
-N_prot = 25008
+upper_edges_df = pd.read_csv(digestion_dir / "digestion_yeast+ups1_result.csv")
+lower_edges_df = pd.read_csv(sol_dir / "lower_edges.csv")
+N_prot = len(upper_edges_df.groupby("accession"))
+# %%
 ref_df = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";", index_col = 0)
 sol_df = [pd.read_csv(sol_dir / (f"results_yeast_10fmol0.{i}00000.csv"), index_col = 0) for i in range(1,10)]
 #%%
-N_prot = 25008
 ref_df = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";", index_col = 0)
-sol_df = pd.read_csv(sol_dir / "results_yeast_2fmol100.csv", index_col = 0)
+sol_df = pd.read_csv(sol_dir / "results_yeast_10fmol100.csv", index_col = 0)
 # %%
 ref_series = ref_df['110616_yeast_ups_10fmol']
-sol_series = sol_df[-1]['abundance']
+sol_series = sol_df[8]['abundance']
 # %%
-ref_series = ref_df['110714_yeast_ups1_2fmol_r3']
+ref_series = ref_df['110616_yeast_ups_10fmol']
 sol_series = sol_df['abundance']
 # %%
 def str_to_float(string : str) -> float:
