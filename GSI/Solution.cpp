@@ -2,14 +2,16 @@
 
 //__________________________________________________________________________________________________________
 
-void Solution::Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra) const {
+void Solution::Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, bool ident) const {
     std::cout << "\nSelected proteins :" << std::endl;
     for (auto& couple : abundances) {
         std::cout << "   - " << couple.first << " : " << couple.second << std::endl;
     }
-    for (const Identification* identification : identifications) {
-        std::cout << *identification << std::endl;
-    }
+    if (ident) {
+        for (const Identification* identification : identifications) {
+            std::cout << *identification << std::endl;
+        }
+    }   
     if (spectra.size() && spectra[0]->Is_Simulated()) {
         std::cout << "\nNumber of wrong selected edges : ";
         unsigned int compteur = 0;

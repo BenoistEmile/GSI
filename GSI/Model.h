@@ -83,7 +83,7 @@ struct Solution {
     * Puis la liste des ar�tes s�lectionn�es (peptide, spectre)
     * Puis le nombre d'ar�tes s�lectionn�es � tort
     */
-    void Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra) const;
+    void Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, bool ident) const;
 
     /*
     * Enregistre la solution dans un fichier csv.
@@ -280,8 +280,8 @@ public:
     /*
     * Affiche la solution courante.
     */
-    void Print_Solution() const {
-        solution.Print(peptides ,spectra);
+    void Print_Solution(bool ident) const {
+        solution.Print(peptides ,spectra, ident);
     };
 
     /*
