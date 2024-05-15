@@ -13,6 +13,7 @@
 #include <cmath>
 #include <algorithm>
 #include <random>
+#include <set>
 
 /*
 * Ce fichier contient la d�finition du type Model ainsi que du type Solution.
@@ -314,7 +315,7 @@ public:
     /*
     * Fait tourner le modèle avec les valeurs de psi1 et psi2 fournies, et enregistre les résultats dans le fichier fourni.
     */
-    void Test_Psi_Values(std::unordered_map<float, float> psi_values, std::ofstream& output_file, std::string job_name);
+    void Test_Psi_Values(std::set<std::tuple<float, float>> psi_values, std::ofstream& output_file, std::string job_name);
 
     //void Evaluate_Solution();
 
