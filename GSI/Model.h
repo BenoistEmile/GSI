@@ -204,6 +204,13 @@ public:
     * Sauvegarde des informations (méthode de génération des probabilités) dans le fichier fourni.
     */
     void Define_Probabilities(const std::string file_name, std::ofstream& output_file);
+    /*
+    * Définit les probabilités sur les arêtes protéines-peptides à partir d'un fichier csv en paramètre.
+    * Seules les arêtes avec une probabilités supérieure à min_proba sont conservées.
+    * Le fichier csv doit contenir les colonnes suivantes : protein_id, peptide_id, Prob.
+    * La digestion in-silico doit avoir été réalisée en demandant la génération d'un fichier.
+    */
+    void Define_Probabilities(const std::string file_name, float min_proba = 0.8);
 
     /*
     * Charge le fichier de spectres en param�tre au format ms2/msp
