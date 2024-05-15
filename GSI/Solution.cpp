@@ -69,10 +69,10 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
     file_path += ".csv";
     if (!fileExists(file_path) || overwrite) {
         output_file.open(file_path);
-        output_file << "protein_id,abundance" << std::endl;
+        output_file << "id,accession,abundance" << std::endl;
         if (save_proteins) {
             for (auto& couple : abundances) {
-                output_file << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
+                output_file << couple.first << "," << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
             }
         }
         if (save_ident) {

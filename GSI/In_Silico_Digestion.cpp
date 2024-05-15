@@ -169,7 +169,7 @@ void Model::In_Silico_Digestion(std::string file_name, std::ofstream& log_file, 
     std::string c_term;
     std::ofstream output_file;
     output_file.open(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name + ".csv");
-    output_file << "peptide,nterm,cterm,miss1,miss2,label,protein_id,peptide_id" << std::endl;
+    output_file << "peptide,nterm,cterm,miss1,miss2,label,accession,protein_id,peptide_id" << std::endl;
     unsigned int count = 0;
     for (std::size_t i = 0; i < proteins.size(); ++i) {
         if (!(*proteins[i]).Is_Digested()) {
@@ -222,12 +222,12 @@ void Model::In_Silico_Digestion(std::string file_name, std::ofstream& log_file, 
                         (*proteins[i]).Add_Peptide(peptides.size());
                         peptides.push_back(new Peptide(peptides.size(), sequences[j]));
                         peptides.back()->Add_Protein(i);
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << i << "," << peptides.back()->Get_Id() << std::endl;
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << "," << peptides.back()->Get_Id() << std::endl;
                     }
                     else {
                         (*proteins[i]).Add_Peptide(position->second);
                         peptides[position->second]->Add_Protein(i);
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << i << "," << peptides[position->second]->Get_Id() << std::endl;
+                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << "," << peptides[position->second]->Get_Id() << std::endl;
                     }
                 }
             }
