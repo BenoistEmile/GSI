@@ -225,6 +225,11 @@ public:
     * Sauvegarde des informations sur les spectres (fichier d'origine, nombre de spectres) dans le fichier fourni.
     */
     void Load_Spectra(const std::string file_name, std::ofstream& output_file);
+    /*
+    * Charge le fichier de spectres en param�tre au format ms2/msp.
+    * Pour chaque spectre, ne conserve que les meilleurs pics.
+    */
+    void Load_Spectra(const std::string file_name, unsigned int max_pics = 60);
 
     /*
     * G�n�re un ensemble de spectres simul�s � partir des prot�ines, des peptides th�oriques et des probabilit�s.
