@@ -324,6 +324,14 @@ public:
     */
     void Test_Psi_Values(std::set<std::tuple<float, float>> psi_values, std::ofstream& output_file, std::string job_name);
 
+    /*
+    * Fait tourner le modèle avec les paramètres fournis, et enregistre les résultats et l'état du modèle.
+    * Le modèle doit avoir été préparé avec un protéome et des spectres expérimentaux.
+    */
+    void Run_Test(std::string prefix = "", float psi1 = 1, float psi2 = 10, unsigned int threshold = 1000, unsigned int max_edges = 4, float min_detect = 0.0, bool compute_detect = false);
+
+    void Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters, std::string prefix = "");
+
     //void Evaluate_Solution();
 
     //void Save() const;

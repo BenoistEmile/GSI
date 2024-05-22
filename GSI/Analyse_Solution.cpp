@@ -1,4 +1,6 @@
 #include "Model.h"
+#define FMT_HEADER_ONLY
+#include "fmt/format.h"
 
 //__________________________________________________________________________________________________________
 
@@ -202,3 +204,44 @@ void Model::Test_Psi_Values(std::set<std::tuple<float, float>> psi_values, std::
         this->Clear(false, false, false, false, true);
     }
 }
+
+//__________________________________________________________________________________________________________
+
+void Model::Run_Test(std::string prefix, float psi1, float psi2, unsigned int threshold, unsigned int max_edges, float min_detect, bool compute_detect) {
+    std::string file_name;
+    std::ofstream lower_edges_file;
+    if (prefix != "") {
+        file_name = prefix + "_" + std::to_string(threshold) + "_" + std::to_string(max_edges) + "_" + std::to_string((int)std::round(psi1)) + "_" + std::to_string((int)std::round(psi2)) + "_" + fmt::format("{0:.2f}", min_detect);
+    }
+    else {
+        file_name = std::to_string(threshold) + "_" + std::to_string(max_edges) + "_" + std::to_string((int)std::round(psi1)) + "_" + std::to_string((int)std::round(psi2)) + "_" + fmt::format("{0:.2f}", min_detect);
+    }
+    std::filesystem::path file_path = std::filesystem::current_path() / "models" / ("lower_edges_" + file_name + ".csv");
+    lower_edges_file.open(file_path);
+    lower_edges_file << "Peptide,Spectrum,Score" << std::endl;
+    this->In_Silico_Digestion(prefix);
+    if (compute_detect) {
+        this->Peptide_detectability("Dby_Deep", prefix);
+    }
+    this->Define_Probabilities(std::string(prefix + "_result.csv"), min_detect);
+    this->Build_Theoretical_Spectra();
+    this->Compute_Score_SpecOMS(0U, 99999U, 2, 0U, threshold, max_edges);
+    std::cout << this->Number_Of_Scores() << std::endl;
+    for (std::size_t iter_score = 0; iter_score < this->Number_Of_Scores(); iter_score++) {
+        Score score = this->Get_Score(iter_score);
+        lower_edges_file << score.peptide << "," << score.spectrum << "," << score.score << std::endl;
+    }
+    lower_edges_file.close();
+    this->Solve(psi1, psi2);
+    this->Save_Solution("results_" + file_name, true, true, false, true);
+}
+
+void Model::Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters, std::string prefix) {
+    for (auto& iter : parameters) {
+        this->Run_Test(prefix, std::get<0>(iter), std::get<1>(iter), std::get<2>(iter), std::get<3>(iter), std::get<4>(iter), false);
+        this->Clear(false, true, false, true, true);
+    }
+}
+
+//__________________________________________________________________________________________________________
+
