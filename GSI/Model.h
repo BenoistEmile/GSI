@@ -145,6 +145,10 @@ public:
     * Sauvegarde des informations sur le jeu de données chargé (nom du fichier, nombre de protéines) dans le fichier fourni.
     */
     void Load_Proteins_Accession(const std::string file_name, std::ofstream& output_file);
+    /*
+    * Charge le fichier de protéines en paramètre avec leurs numéros d'accession (si possible). Il doit être au format FASTA.
+    */
+    void Load_Proteins_Accession(const std::string file_name);
 
     /*
     * Effectue la digestion in-silico des prot�ines avec de la trypsine. Seuls les peptides dont la taille respecte les limites en param�tre sont g�n�r�s.

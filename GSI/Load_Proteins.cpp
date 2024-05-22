@@ -80,3 +80,42 @@ void Model::Load_Proteins_Accession(const std::string file_name, std::ofstream& 
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
     }
 }
+
+void Model::Load_Proteins_Accession(const std::string file_name) {
+    std::ifstream file(std::filesystem::current_path().generic_string() + "/data/proteins/" + file_name);
+    if (file) {
+        std::string line, accession;
+        std::string sequence = "";
+        std::size_t index1, index2;
+        while (getline(file, line)) {
+            if (line[0] == '>') {
+                if (Is_Valid_Sequence(sequence)) {
+                    proteins.push_back(new Protein(proteins.size(), sequence, accession));
+                }
+                sequence = "";
+                if (line.substr(0, 4) == ">sp|") {
+                    index1 = 4;
+                }
+                else {
+                    index1 = 1;
+                }
+                index2 = line.find("|", index1);
+                if (index2 != line.npos) {
+                    accession = line.substr(index1, index2 - index1);
+                }
+                else {
+                    accession = "NA";
+                }
+            }
+            else {
+                sequence += line;
+            }
+        }
+        if (Is_Valid_Sequence(sequence)) {
+            proteins.push_back(new Protein(proteins.size(), sequence, accession));
+        }
+    }
+    else {
+        std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
+    }
+}
