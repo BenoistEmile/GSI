@@ -371,4 +371,6 @@ FodyWeavers.xsd
 # Local files
 GSI/data/digestion/
 GSI/solution/
-GSI/build/*
+GSI/build/
+GSI/models/
+GSI/ref_synthetic_data/
