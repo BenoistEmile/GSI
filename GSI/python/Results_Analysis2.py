@@ -1,5 +1,6 @@
 #%%
 from pathlib import Path
+from typing import Union
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -22,12 +23,14 @@ def prediction_category(row):
 
 class Results_Analysis:
 
-    def __init__(self, prefix: str, psi1: float, psi2: float, threshold: int, max_edges: int, min_detect: float, ref: pd.DataFrame):
+    def __init__(self, prefix: str, psi1: float, psi2: float, min_detect: float, ref: pd.DataFrame, threshold: Union[int, None] = None, max_edges: Union[int, None] = None, spectra_error_rate: Union[float, None] = None, false_edges: Union[int, None] = None, synthetic_data: bool = False):
         self.prefix = prefix
         self.psi1 = psi1
         self.psi2 = psi2
         self.threshold = threshold
         self.max_edges = max_edges
+        self.spectra_error_rate = spectra_error_rate
+        self.false_edges = false_edges
         self.min_detect = min_detect
         self.root_dir = Path.cwd().parent
         self.data_dir = self.root_dir / "data"
@@ -35,10 +38,17 @@ class Results_Analysis:
         self.models_dir = self.root_dir / "models"
         self.digestion_dir = self.data_dir / "digestion"
         self.upper_edges = pd.read_csv(self.digestion_dir / f"{prefix}_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
-        self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+        if synthetic_data:
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+        else:
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
         self.ref = ref
-        self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
-        self.ref = pd.merge(self.ref, self.upper_edges[["accession","protein_id"]].drop_duplicates(), left_on = "Accession", right_on="accession", how = 'left').drop('accession', axis = 1)
+        if synthetic_data:
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+        else:
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+        if "protein_id" not in self.ref.columns:
+            self.ref = pd.merge(self.ref, self.upper_edges[["accession","protein_id"]].drop_duplicates(), left_on = "Accession", right_on="accession", how = 'left').drop('accession', axis = 1)
         self.upper_edges = self.upper_edges.loc[self.upper_edges["Prob"] >= min_detect]
         self.N_prot = len(self.upper_edges.groupby("accession"))
         self.protein_to_spectra = pd.merge(self.upper_edges, self.lower_edges, left_on = "peptide_id", right_on = "Peptide", how = 'left').drop("Peptide", axis = 1)
@@ -54,7 +64,12 @@ class Results_Analysis:
         min_prob = self.upper_edges["Prob"].min()
         mean_prob = self.upper_edges["Prob"].mean()
         std_prob = self.upper_edges["Prob"].std()
-        self.upper_edges["Prob"].hist(bins = 50)
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.upper_edges["Prob"], bins = 50)
+        ax.set_xlabel("Peptide Detectability")
+        ax.set_ylabel("Number of peptides")
+        plt.show()
+        # self.upper_edges["Prob"].hist(bins = 50)
         N_prot_spectra = len(self.protein_to_spectra.dropna()["protein_id"].drop_duplicates())
         N_path_prot_spectra = len(self.protein_to_spectra[["protein_id","Spectrum"]].dropna())
         print(f"""Number of proteins : {self.N_prot}
@@ -65,14 +80,17 @@ Max probability : {round(max_prob, 2)}
 Mean probability (std) : {round(mean_prob, 2)} ({round(std_prob, 2)})
 Number of proteins with spectra : {N_prot_spectra}
 Number of proteins-spectra paths : {N_path_prot_spectra}""")
-        fig, axs = plt.subplots(1,2, sharey = True, figsize = (20,6))
-        self.upper_edges.groupby("protein_id").count()["accession"].hist(bins = self.upper_edges.groupby("protein_id").count()["accession"].max(), ax = axs[0])
-        self.protein_to_spectra[["protein_id","Spectrum"]].dropna().groupby("protein_id").count().hist(bins = self.protein_to_spectra[["protein_id","Spectrum"]].dropna().groupby("protein_id").count()["Spectrum"].max(), ax = axs[1])
-        axs[0].set_title("Number of peptides per protein")
-        axs[0].set_xlabel("Number of peptides")
-        axs[0].set_ylabel("Number of proteins")
-        axs[1].set_title("Number of spectra par protein")
-        axs[1].set_xlabel("Number of spectra")
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.upper_edges.groupby("protein_id").count()["accession"], bins = self.upper_edges.groupby("protein_id").count()["accession"].max())
+        ax.set_title("Number of peptides per protein")
+        ax.set_xlabel("Number of peptides")
+        ax.set_ylabel("Number of proteins")
+        plt.show()
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.protein_to_spectra[["protein_id","Spectrum"]].dropna().groupby("protein_id").count(), bins = self.protein_to_spectra[["protein_id","Spectrum"]].dropna().groupby("protein_id").count()["Spectrum"].max())
+        ax.set_title("Number of spectra par protein")
+        ax.set_xlabel("Number of spectra")
+        ax.set_ylabel("Number of proteins")
         plt.show()
     
     def print_stats_true_proteins(self) -> None:
@@ -127,15 +145,17 @@ Median score : {round(median_score,2)}
 Min score : {round(min_score,2)}
 Max score : {round(max_score,2)}
 Mean score (std) : {round(mean_score,2)} ({round(std_score,2)})""")
-        fig, axs = plt.subplots(1,2, sharey = False, figsize = (20,6))
-        self.lower_edges["Score"].hist(bins = 50, ax = axs[0])
-        self.lower_edges.groupby("Peptide").count()["Spectrum"].hist(bins = self.lower_edges.groupby("Peptide").count()["Spectrum"].max(), ax = axs[1])
-        axs[0].set_title("Scores distribution")
-        axs[0].set_xlabel("Score")
-        axs[0].set_ylabel("Number of spectra")
-        axs[1].set_title("Number of spectra per peptide")
-        axs[1].set_xlabel("Number of spectra")
-        axs[1].set_ylabel("Number of peptide")
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.lower_edges["Score"], bins = 50)
+        ax.set_title("Scores distribution")
+        ax.set_xlabel("Score")
+        ax.set_ylabel("Number of spectra")
+        plt.show()
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.lower_edges.groupby("Peptide").count()["Spectrum"], bins = self.lower_edges.groupby("Peptide").count()["Spectrum"].max() - 1, align = 'left', rwidth = 0.5)
+        ax.set_title("Number of spectra per peptide")
+        ax.set_xlabel("Number of spectra")
+        ax.set_ylabel("Number of peptide")
         plt.show()
 
     def print_stats_predictions(self):
@@ -162,7 +182,7 @@ FNR : {round(FNR, 3)}
 PPV : {round(PPV, 3)}
 NPV : {round(NPV, 3)}""")
     
-    def analyse_df(self, notes = "") -> pd.DataFrame:
+    def analyse_df(self, notes = "", detect_model = "DbyDeep") -> pd.DataFrame:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
         false_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False]
         df = self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates()
@@ -179,8 +199,11 @@ NPV : {round(NPV, 3)}""")
         return pd.DataFrame({
             "Dataset": self.prefix,
             "Notes": notes,
+            "Detectability Model": detect_model,
             "Threshold": self.threshold,
             "Max Score Edges": self.max_edges,
+            "Spectra Error Rate": self.spectra_error_rate,
+            "False Edges": self.false_edges,
             "Peptides Min Detectability": self.min_detect,
             "Psi1": self.psi1,
             "Psi2": self.psi2,
@@ -216,11 +239,14 @@ class Model_Analyses:
         self.analyses_df = pd.DataFrame(columns = [
             "Dataset",
             "Notes",
+            "Detectability Model",
             "Threshold",
             "Max Score Edges",
             "Peptides Min Detectability",
             "Psi1",
             "Psi2",
+            "Spectra Error Rate",
+            "False Edges",
             "Proteins",
             "Peptides",
             "Protein Edges",
@@ -263,13 +289,13 @@ class Model_Analyses:
         analyses.Load_Analyses(file_name)
         return analyses
 #%%
-prefix = "yeast_10fmol_nonoise"
+prefix = "yeast_10fmol_nonoise_ap3"
 for (threshold, max_edges, psi1, psi2, min_detect) in [(7, 4, 1, 10, 0.00)]:
     ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
-    results = Results_Analysis(prefix, psi1, psi2, threshold, max_edges, min_detect, ref)
+    results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, threshold = threshold, max_edges = max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
-    results.print_stats_proteins()
+    # results.print_stats_proteins()
     # results.print_stats_scores()
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
@@ -340,7 +366,7 @@ fig,axs = plt.subplots(1,2, sharey = True, figsize = (14,5))
 axs[0].scatter(n_prot, n_scores, c = thresh, marker = '+')
 axs[1].scatter(n_prot, n_scores, c = color, marker = '+')
 plt.show()
-# %%
+# %% Construction of GSI_Analyses
 Analyses = Model_Analyses()
 for (threshold, n_edges) in [(7,2),(7,3),(7,4),(7,10),(12,2),(12,3),(12,4),(17,2),(17,3),(17,4),(17,10),(27,2),(27,3),(27,4),(27,10),(37,2),(37,3),(37,4),
                              (100,4),(100,5),
@@ -362,11 +388,18 @@ for (threshold, n_edges) in [(7,2),(7,3),(7,4),(7,10),(12,2),(12,3),(12,4),(17,2
     results = Results_Analysis(upper_edges, lower_edges, ref, sol)
 
     Analyses.Add_Analysis(results.analyse_df(dataset_name = "UPS+Yeast", thresh = threshold, max_edges = n_edges))
-# %%
+# %% Add a real data analysis
 prefix = "yeast_10fmol_nonoise"
+ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
 for (threshold, max_edges, psi1, psi2, min_detect) in [(60, 4, 1, 10, 0.00), (70, 4, 1, 10, 0.00), (1000, 4, 1, 10, 0.00)]:
-    ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
-    results = Results_Analysis(prefix, psi1, psi2, threshold, max_edges, min_detect, ref)
+    results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, threshold = threshold, max_edges = max_edges)
 
     Analyses.Add_Analysis(results.analyse_df())
+# %% Add a synthetic data analysis
+for i in range(1,6):
+    prefix = f"test_synth{i}"
+    for (min_detect, spectra_error_rate, false_edges, psi1, psi2) in [(0.0, 0.4, 2, 1, 10)]:
+        ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+        results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, spectra_error_rate = spectra_error_rate, false_edges = false_edges, synthetic_data = True)
+        Analyses.Add_Analysis(results.analyse_df())
 # %%
