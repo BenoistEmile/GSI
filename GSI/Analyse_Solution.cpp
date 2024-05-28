@@ -245,3 +245,46 @@ void Model::Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, u
 
 //__________________________________________________________________________________________________________
 
+void Model::Run_Test_Synthetic_Data(std::string prefix, std::string digestion_file_name, float min_detect, float spectra_error_rate, unsigned int false_edges, float psi1, float psi2) {
+    std::ofstream ref_file, lower_edges_file;
+    this->In_Silico_Digestion(digestion_file_name);
+    std::cout << "proteins digested : " << this->Number_Of_Peptides() << std::endl;
+    std::cout << prefix << ", " << digestion_file_name << ", " << min_detect << ", " << spectra_error_rate << ", " << false_edges << ", " << psi1 << ", " << psi2 << std::endl;
+    this->Define_Probabilities(std::string(digestion_file_name + "_result.csv"), min_detect);
+    this->Build_Theoretical_Spectra();
+    std::unordered_map<std::size_t, unsigned int> sample = this->Random_Sample(200, 200, 1, 20);
+    std::string file_name = prefix + "_" + fmt::format("{0:.2f}", min_detect) + "_" + fmt::format("{0:.1f}", spectra_error_rate) + "_" + std::to_string(false_edges) + "_" + std::to_string((int)round(psi1)) + "_" + std::to_string((int)round(psi2));
+    std::filesystem::path file_path = std::filesystem::current_path() / "ref_synthetic_data" / (file_name + ".csv");
+    ref_file.open(file_path);
+    ref_file << "protein_id,Abundance" << std::endl;
+    for (auto& iter : sample) {
+        ref_file << iter.first << "," << iter.second << std::endl;
+    }
+    ref_file.close();
+
+    Model sample_generator;
+    if (min_detect > 0) {
+        sample_generator.proteins = this->proteins;
+        sample_generator.peptides = this->peptides;
+        sample_generator.Define_Probabilities(std::string(digestion_file_name + "_result.csv"), 0.0);
+        sample_generator.Simulated_Sample(sample, spectra_error_rate);
+        this->spectra = sample_generator.spectra;
+    }
+    else {
+        this->Simulated_Sample(sample, spectra_error_rate);
+    }
+    this->Compute_Score(false_edges);
+    file_path = std::filesystem::current_path() / "models" / ("lower_edges_" + file_name + ".csv");
+    lower_edges_file.open(file_path);
+    lower_edges_file << "Peptide,Spectrum,Score" << std::endl;
+    std::cout << this->Number_Of_Scores() << std::endl;
+    for (std::size_t iter_score = 0; iter_score < this->Number_Of_Scores(); iter_score++) {
+        Score score = this->Get_Score(iter_score);
+        lower_edges_file << score.peptide << "," << score.spectrum << "," << score.score << std::endl;
+    }
+    lower_edges_file.close();
+    this->Solve(psi1, psi2);
+    this->Print_Solution();
+    this->Save_Solution("results_" + file_name, true, true, false, true);
+    this->Clear(false, true, true, true, true);
+}

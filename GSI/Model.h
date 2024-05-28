@@ -341,6 +341,8 @@ public:
 
     void Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters, std::string prefix = "");
 
+    void Run_Test_Synthetic_Data(std::string prefix, std::string digestion_file_name, float min_detect = 0.0, float spectra_error_rate = 0.0, unsigned int false_edges = 1, float psi1 = 1, float psi2 = 10);
+
     //void Evaluate_Solution();
 
     //void Save() const;
