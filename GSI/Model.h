@@ -293,7 +293,7 @@ public:
     /*
     * Affiche la solution courante.
     */
-    void Print_Solution(bool ident) const {
+    void Print_Solution(bool ident = false) const {
         solution.Print(peptides ,spectra, ident);
     };
 

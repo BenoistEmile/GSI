@@ -96,7 +96,7 @@ void Peptide::Build_Spectrum(std::unordered_map<char, double> modifications) {
     }
     sumMass = AminoAcid::Get_B_Mass();
     auto j = (*pics).begin();
-    for (std::size_t i = 0; i < sequence.size(); ++i) {
+    for (std::size_t i = 0; i < sequence.size() - 1; ++i) {
         //sumMass = Round_Precision(Amino_Acids.at(sequence[i]).Get_Mono_Isotopic_Mass() + sumMass, 3);
         sumMass += Amino_Acids.at(sequence[i]).Get_Mono_Isotopic_Mass();
         if (modifications.contains(Amino_Acids.at(sequence[i]).Get_Letter())) {
