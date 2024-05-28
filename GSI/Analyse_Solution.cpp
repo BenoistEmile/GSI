@@ -221,7 +221,7 @@ void Model::Run_Test(std::string prefix, float psi1, float psi2, unsigned int th
     lower_edges_file << "Peptide,Spectrum,Score" << std::endl;
     this->In_Silico_Digestion(prefix);
     if (compute_detect) {
-        this->Peptide_detectability("Dby_Deep", prefix);
+        this->Peptide_Detectability("Dby_Deep", prefix);
     }
     this->Define_Probabilities(std::string(prefix + "_result.csv"), min_detect);
     this->Build_Theoretical_Spectra();

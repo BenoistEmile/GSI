@@ -55,6 +55,8 @@ int main() {
 	// model.Load_Proteins("c_albicans+ups.fasta");
 	model.Load_Proteins_Accession("yeast+ups1.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
+
+	model.Peptide_Detectability();
 	
 	std::string digestion_file_name = "DetectabilitiesOfPeptides_yeast+ups1";
 	std::cout << std::string(digestion_file_name + "_result.csv") << std::endl;

@@ -170,11 +170,22 @@ public:
     * Sauvegarde le nombre de peptides générés dans le fichier fourni.
     */
     void In_Silico_Digestion(std:: string file_name, std::ofstream& log_file, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
+    /*
+    *
+    */
+    void In_Silico_Digestion_2(std:: string sequence_file_name, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
+
+    void AP3_Fasta();
 
     /*
     * 
     */
-    void Peptide_detectability(std::string env_name = "Dby_Deep", std::string digestion_file_name = "digestion") const;
+    void Peptide_Detectability(std::string env_name = "Dby_Deep", std::string digestion_file_name = "digestion") const;
+    /*
+    * Remplit la partie haute du modèle.
+    * DbyDeep : 1, AP3 : 2.
+    */
+    void Peptide_Detectability(int detectability_model = 1, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25);
 
     /*
     * G�n�re les spectres th�oriques � partir des spectres th�oriques avec la possibilit� d'ajouter des modifications.

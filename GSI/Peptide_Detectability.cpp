@@ -3,7 +3,20 @@
 
 //__________________________________________________________________________________________________________
 
-void Model::Peptide_detectability(std::string env_name, std::string digestion_file_name) const {
+void Model::AP3_Fasta() {
+    std::ofstream temp_fasta(std::filesystem::current_path() / "local" / "temp_fasta.fasta");
+    for (auto& protein : proteins) {
+        temp_fasta << ">" << protein->Get_Accession() << std::endl;
+        for (unsigned int i = 0; i < protein->Get_Sequence().length(); i += 60) {
+            temp_fasta << protein->Get_Sequence().substr(i, 60) << std::endl;
+        }
+    }
+    temp_fasta.close();
+}
+
+//__________________________________________________________________________________________________________
+
+void Model::Peptide_Detectability(std::string env_name, std::string digestion_file_name) const {
     std::filesystem::path curr_path = std::filesystem::current_path();
     std::filesystem::path script_path = std::filesystem::path("~/stage/code/DbyDeep-main/dbydeep_model.py");
     std::filesystem::path data_path = curr_path / "data" / "digestion" / digestion_file_name;
@@ -19,5 +32,24 @@ void Model::Peptide_detectability(std::string env_name, std::string digestion_fi
     int return_code = system(command.c_str());
     if (return_code != 0) {
         std::cout << "An error occured during peptide detectability prediction" << std::endl;
+    }
+}
+
+void Model::Peptide_Detectability(int detectability_model, int minimum_number_of_amino_acids, int maximum_number_of_amino_acids) {
+    In_Silico_Digestion_2("digestion_file", minimum_number_of_amino_acids, maximum_number_of_amino_acids);
+    switch (detectability_model) {
+        case 1: {
+            std::string command = "conda run -n detectability python ./python/DbyDeep_script.py";
+            int return_code = system(command.c_str());
+            if (return_code != 0) {
+                std::cout << "An error occured during peptide detectability prediction" << std::endl;
+            }
+            
+        }
+        break;
+        case 2: {
+            AP3_Fasta();
+        }
+        break;
     }
 }
