@@ -1,0 +1,11 @@
+from pathlib import Path
+import pandas as pd
+
+gsi_path = Path.cwd().parent
+
+proteins = pd.read_csv(gsi_path / 'data' / 'digestion' / 'digestion_file.csv')[["accession", "protein_id"]].drop_duplicates()
+ap3_results = pd.read_csv(gsi_path / 'local' / 'ap3_results' / 'DetectabilitiesOfPeptides.txt', delimiter = "\t")
+
+output = pd.merge(proteins, ap3_results, left_on = ["accession"], right_on = ["Protein id"])[["Peptide sequence", "protein_id", "Peptide detectability"]]
+output.rename(columns = {"Peptide detectability": "Prob", "Peptide sequence": "peptide"}, inplace = True)
+# output.to_csv(gsi_path / 'data' / 'digestion' / 'output_file.csv', index = False)

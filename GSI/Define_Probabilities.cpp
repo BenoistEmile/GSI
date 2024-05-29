@@ -186,3 +186,62 @@ void Model::Define_Probabilities(const std::string file_name, float min_proba) {
     }
     proba_file.close();
 }
+
+void Model::Define_Probabilities_2(const std::string file_name, const float min_proba) {
+    std::ifstream proba_file(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name);
+    if (proba_file) {
+        bool first_line = true;
+        std::size_t previous_protein = 0;
+        std::unordered_map<std::size_t, std::size_t> positions;
+        std::vector<std::string> row;
+        std::string word, line, sequence;
+        std::unordered_map<std::size_t, std::size_t>::iterator position;
+        std::size_t protein, peptide;
+        float proba;
+        int index_protein, index_peptide, index_proba, index_seq;
+        while (getline(proba_file, line)) {
+            row.clear();
+            std::stringstream s(line);
+            while (getline(s, word, ',')) {
+                row.push_back(word);
+            }
+            if (first_line) {
+                first_line = false;
+                index_protein = std::find(row.begin(), row.end(), "protein_id") - row.begin();
+                index_proba = std::find(row.begin(), row.end(), "Prob") - row.begin();
+                index_seq = std::find(row.begin(), row.end(), "peptide") - row.begin();
+                continue;
+            }
+            protein = std::stoi(row[index_protein]);
+            proba = std::stof(row[index_proba]);
+            sequence = row[index_seq];
+            if (proba >= min_proba) {
+                if (protein != previous_protein) {
+                    previous_protein = protein;
+                    positions.clear();
+                }
+                if (peptide >= peptides.size()) {
+                    peptides.push_back(new Peptide(peptides.size(), sequence));
+                    if (peptides.at(peptide)->Get_Id() != peptide) {
+                        throw "The last built peptide id does not match the expected id.";
+                    }
+                }
+                peptides.at(peptide)->Add_Protein(protein);
+                (*proteins.at(protein)).Add_Peptide(peptide);
+                position = positions.find(peptide);
+                if (position == positions.end()) {
+                    positions[peptide] = 0;
+                    (*peptides[peptide]).Define_Probabilities(proba, protein, 0);
+                }
+                else {
+                    position->second++;
+                    (*peptides[peptide]).Define_Probabilities(proba, protein, position->second);
+                }
+            }
+        }
+    }
+    else {
+        std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
+    }
+    proba_file.close();
+}

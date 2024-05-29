@@ -185,7 +185,7 @@ public:
     * Remplit la partie haute du modèle.
     * DbyDeep : 1, AP3 : 2.
     */
-    void Peptide_Detectability(int detectability_model = 1, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25);
+    void Peptide_Detectability(int detectability_model = 1, float min_detect = 0.0, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25);
 
     /*
     * G�n�re les spectres th�oriques � partir des spectres th�oriques avec la possibilit� d'ajouter des modifications.
@@ -226,6 +226,14 @@ public:
     * La digestion in-silico doit avoir été réalisée en demandant la génération d'un fichier.
     */
     void Define_Probabilities(const std::string file_name, float min_proba = 0.8);
+
+    /*
+    * Charge les peptides et les arêtes protéines-peptides.
+    */
+    void Define_Probabilities_2(const std::string file_name, const float min_proba = 0.0);
+    /*
+    *
+    */
 
     /*
     * Charge le fichier de spectres en param�tre au format ms2/msp

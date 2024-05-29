@@ -13,5 +13,5 @@ if __name__ == "__main__":
     print(opt)
     dbydeep_model.main(opt)
 
-    detectabilities = pd.read_csv(gsi_path / 'data' / 'digestion' / 'output_file.csv')
-
+    detectabilities = pd.read_csv(gsi_path / 'data' / 'digestion' / 'output_file.csv')[["peptide", "protein_id", "Prob"]]
+    detectabilities.to_csv(gsi_path / 'data' / 'digestion' / 'output_file.csv', index = False)
