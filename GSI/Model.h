@@ -184,6 +184,7 @@ public:
     /*
     * Remplit la partie haute du modèle.
     * DbyDeep : 1, AP3 : 2.
+    * Pour ne pas faire tourner de modèle et réutiliser les résultats précédents => 0.
     */
     void Peptide_Detectability(int detectability_model = 1, float min_detect = 0.0, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25);
 

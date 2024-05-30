@@ -41,10 +41,10 @@ void Model::Peptide_Detectability(int detectability_model, float min_detect, int
     switch (detectability_model) {
         case 1: {
             std::string command = "conda run -n detectability python ./python/DbyDeep_script.py";
-            // return_code = system(command.c_str());
-            // if (return_code != 0) {
-            //     throw "An error occured during peptide detectability prediction : " + return_code;
-            // }
+            return_code = system(command.c_str());
+            if (return_code != 0) {
+                throw "An error occured during peptide detectability prediction : " + return_code;
+            }
             break;
         }
         case 2: {
@@ -64,10 +64,10 @@ void Model::Peptide_Detectability(int detectability_model, float min_detect, int
             //     throw "An error occured during peptide detectability prediction : " + return_code;
             // }
             std::string command = "conda run -n detectability python ./python/ap3_script.py";
-            // return_code = system(command.c_str());
-            // if (return_code != 0) {
-            //     throw "An error occured during detectability results processing : " + return_code;
-            // }
+            return_code = system(command.c_str());
+            if (return_code != 0) {
+                throw "An error occured during detectability results processing : " + return_code;
+            }
             break;
         }
     }

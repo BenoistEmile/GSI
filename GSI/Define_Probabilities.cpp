@@ -188,14 +188,15 @@ void Model::Define_Probabilities(const std::string file_name, float min_proba) {
 }
 
 void Model::Define_Probabilities_2(const std::string file_name, const float min_proba) {
-    std::ifstream proba_file(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name);
+    std::ifstream proba_file(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name + ".csv");
     if (proba_file) {
         bool first_line = true;
         std::size_t previous_protein = 0;
         std::unordered_map<std::size_t, std::size_t> positions;
         std::vector<std::string> row;
         std::string word, line, sequence;
-        std::unordered_map<std::size_t, std::size_t>::iterator position;
+        std::unordered_map<std::size_t, std::size_t>::iterator position_2;
+        std::unordered_map<std::string, std::size_t>::const_iterator position_1;
         std::size_t protein, peptide;
         float proba;
         int index_protein, index_peptide, index_proba, index_seq;
@@ -220,22 +221,28 @@ void Model::Define_Probabilities_2(const std::string file_name, const float min_
                     previous_protein = protein;
                     positions.clear();
                 }
-                if (peptide >= peptides.size()) {
+                position_1 = peptides_sequences.find(sequence);
+                if (position_1 == peptides_sequences.end()) {
+                    peptides_sequences[sequence] = peptides.size();
+                    (*proteins[protein]).Add_Peptide(peptides.size());
+                    peptide = peptides.size();
                     peptides.push_back(new Peptide(peptides.size(), sequence));
-                    if (peptides.at(peptide)->Get_Id() != peptide) {
-                        throw "The last built peptide id does not match the expected id.";
-                    }
+                    peptides.back()->Add_Protein(protein);
                 }
-                peptides.at(peptide)->Add_Protein(protein);
-                (*proteins.at(protein)).Add_Peptide(peptide);
-                position = positions.find(peptide);
-                if (position == positions.end()) {
+                else {
+                    (*proteins[protein]).Add_Peptide(position_1->second);
+                    peptides[position_1->second]->Add_Protein(protein);
+                    position_2 = positions.find(position_1->second);
+                    peptide = position_1->second;
+                }
+                position_2 = positions.find(peptide);
+                if (position_2 == positions.end()) {
                     positions[peptide] = 0;
                     (*peptides[peptide]).Define_Probabilities(proba, protein, 0);
                 }
                 else {
-                    position->second++;
-                    (*peptides[peptide]).Define_Probabilities(proba, protein, position->second);
+                    position_2->second++;
+                    (*peptides[peptide]).Define_Probabilities(proba, protein, position_2->second);
                 }
             }
         }

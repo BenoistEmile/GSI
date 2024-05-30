@@ -248,9 +248,8 @@ void Model::In_Silico_Digestion_2(std:: string file_name, int minimum_number_of_
     std::string n_term;
     std::string c_term;
     std::ofstream output_file;
-    std::size_t pep_count = 0;
     output_file.open(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name + ".csv");
-    output_file << "peptide,nterm,cterm,miss1,miss2,label,accession,protein_id,peptide_id" << std::endl;
+    output_file << "peptide,nterm,cterm,miss1,miss2,label,accession,protein_id" << std::endl;
     for (std::size_t i = 0; i < proteins.size(); ++i) {
         if (!(*proteins[i]).Is_Digested()) {
             sequences = {};
@@ -295,15 +294,7 @@ void Model::In_Silico_Digestion_2(std:: string file_name, int minimum_number_of_
                     if (sequences[j].find("Z") != std::string::npos || n_terms[j].find("Z") != std::string::npos || c_terms[j].find("Z") != std::string::npos) {
                         continue;
                     }
-                    position = peptides_sequences.find(sequences[j]);
-                    if (position == peptides_sequences.end()) {
-                        peptides_sequences[sequences[j]] = pep_count;
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << "," << pep_count << std::endl;
-                        pep_count++;
-                    }
-                    else {
-                        output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << "," << position->second << std::endl;
-                    }
+                    output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << std::endl;
                 }
             }
         }
