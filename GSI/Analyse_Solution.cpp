@@ -245,15 +245,13 @@ void Model::Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, u
 
 //__________________________________________________________________________________________________________
 
-void Model::Run_Test_Synthetic_Data(std::string prefix, std::string digestion_file_name, float min_detect, float spectra_error_rate, unsigned int false_edges, float psi1, float psi2) {
-    std::ofstream ref_file, lower_edges_file;
-    this->In_Silico_Digestion(digestion_file_name);
-    std::cout << "proteins digested : " << this->Number_Of_Peptides() << std::endl;
-    std::cout << prefix << ", " << digestion_file_name << ", " << min_detect << ", " << spectra_error_rate << ", " << false_edges << ", " << psi1 << ", " << psi2 << std::endl;
-    this->Define_Probabilities(std::string(digestion_file_name + "_result.csv"), min_detect);
+void Model::Run_Test_Synthetic_Data(std::string prefix, std::string fasta, int detectability_model, float min_detect, float spectra_error_rate, unsigned int false_edges, float psi1, float psi2) {
+    std::ofstream ref_file, lower_edges_file, upper_edges_file;
+    this->Load_Proteins_Accession(fasta);
+    this->Peptide_Detectability(detectability_model, min_detect);
     this->Build_Theoretical_Spectra();
     std::unordered_map<std::size_t, unsigned int> sample = this->Random_Sample(200, 200, 1, 20);
-    std::string file_name = prefix + "_" + fmt::format("{0:.2f}", min_detect) + "_" + fmt::format("{0:.1f}", spectra_error_rate) + "_" + std::to_string(false_edges) + "_" + std::to_string((int)round(psi1)) + "_" + std::to_string((int)round(psi2));
+    std::string file_name = prefix + "_" + std::to_string(detectability_model) + "_" + fmt::format("{0:.2f}", min_detect) + "_" + fmt::format("{0:.1f}", spectra_error_rate) + "_" + std::to_string(false_edges) + "_" + std::to_string((int)round(psi1)) + "_" + std::to_string((int)round(psi2));
     std::filesystem::path file_path = std::filesystem::current_path() / "ref_synthetic_data" / (file_name + ".csv");
     ref_file.open(file_path);
     ref_file << "protein_id,Abundance" << std::endl;
@@ -264,16 +262,27 @@ void Model::Run_Test_Synthetic_Data(std::string prefix, std::string digestion_fi
 
     Model sample_generator;
     if (min_detect > 0) {
-        sample_generator.proteins = this->proteins;
-        sample_generator.peptides = this->peptides;
-        sample_generator.Define_Probabilities(std::string(digestion_file_name + "_result.csv"), 0.0);
-        sample_generator.Simulated_Sample(sample, spectra_error_rate);
-        this->spectra = sample_generator.spectra;
+        sample_generator.Load_Proteins_Accession(fasta);
+        sample_generator.Peptide_Detectability(detectability_model, 0.0);
+        sample_generator.Simulated_Sample(sample, "temp_spectra.csv", spectra_error_rate);
+        this->Load_Synthetic_Spectra("temp_spectra.csv");
     }
     else {
         this->Simulated_Sample(sample, spectra_error_rate);
     }
     this->Compute_Score(false_edges);
+    file_path = std::filesystem::current_path() / "models" / ("upper_edges_" + file_name + ".csv");
+    upper_edges_file.open(file_path);
+    upper_edges_file << "accession,protein_id,peptide_id,Prob" << std::endl;
+    for (auto& peptide : peptides) {
+        for (auto& protein : peptide->Get_Proteins()) {
+            for (auto& edge : std::get<1>(protein)) {
+                upper_edges_file << proteins.at(std::get<0>(protein))->Get_Accession() << "," << proteins.at(std::get<0>(protein))->Get_Id() << "," << peptide->Get_Id() << "," << edge << std::endl;
+            }
+        }
+    }
+    upper_edges_file.close();
+    
     file_path = std::filesystem::current_path() / "models" / ("lower_edges_" + file_name + ".csv");
     lower_edges_file.open(file_path);
     lower_edges_file << "Peptide,Spectrum,Score" << std::endl;

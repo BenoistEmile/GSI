@@ -192,3 +192,43 @@ void Model::Load_Spectra(const std::string file_name, unsigned int max_pics) {
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
     }
 }
+
+void Model::Load_Synthetic_Spectra(const std::string file_name) {
+    std::ifstream spectra_file(std::filesystem::current_path() / "local" / "synthetic_spectra" / file_name);
+    if (spectra_file) {
+        bool first_line = true;
+        int index_protein, index_peptide, index_position;
+        std::vector<std::string> row;
+        std::string word, line, sequence;
+        std::size_t protein, position;
+        std::unordered_map<std::string, std::size_t>::const_iterator peptide;
+        while (getline(spectra_file, line)) {
+            row.clear();
+            std::stringstream s(line);
+            while (getline(s, word, ',')) {
+                row.push_back(word);
+            }
+            if (first_line) {
+                first_line = false;
+                index_protein = std::find(row.begin(), row.end(), "protein_id") - row.begin();
+                index_peptide = std::find(row.begin(), row.end(), "peptide") - row.begin();
+                index_position = std::find(row.begin(), row.end(), "position") - row.begin();
+                continue;
+            }
+            protein = std::stoi(row[index_protein]);
+            sequence = row[index_peptide];
+            position = std::stoi(row[index_position]);
+            peptide = peptides_sequences.find(sequence);
+            if (peptide == peptides_sequences.end()) {
+                peptide = std::next(peptides_sequences.begin(), (int)(rand() / (float)RAND_MAX) * peptides_sequences.size());
+            }
+            const Origin* origin = new Origin(peptide->second, protein, position);
+            const std::vector<Pic*>* pics = (peptides[peptide->second])->Get_Pics();
+            spectra.push_back(new Spectrum(spectra.size(), pics, origin, true));
+        }
+    }
+    else {
+        throw "ERROR : Impossible to open the file named : " + file_name;
+    }
+    spectra_file.close();
+}

@@ -23,7 +23,7 @@ def prediction_category(row):
 
 class Results_Analysis:
 
-    def __init__(self, prefix: str, psi1: float, psi2: float, min_detect: float, ref: pd.DataFrame, threshold: Union[int, None] = None, max_edges: Union[int, None] = None, spectra_error_rate: Union[float, None] = None, false_edges: Union[int, None] = None, synthetic_data: bool = False):
+    def __init__(self, prefix: str, psi1: float, psi2: float, min_detect: float, detect_model: int, ref: pd.DataFrame, threshold: Union[int, None] = None, max_edges: Union[int, None] = None, spectra_error_rate: Union[float, None] = None, false_edges: Union[int, None] = None, synthetic_data: bool = False):
         self.prefix = prefix
         self.psi1 = psi1
         self.psi2 = psi2
@@ -32,24 +32,28 @@ class Results_Analysis:
         self.spectra_error_rate = spectra_error_rate
         self.false_edges = false_edges
         self.min_detect = min_detect
+        self.detect_model = detect_model
         self.root_dir = Path.cwd().parent
         self.data_dir = self.root_dir / "data"
         self.sol_dir = self.root_dir / "solution"
         self.models_dir = self.root_dir / "models"
         self.digestion_dir = self.data_dir / "digestion"
-        self.upper_edges = pd.read_csv(self.digestion_dir / f"{prefix}_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
+        # self.upper_edges = pd.read_csv(self.digestion_dir / f"{prefix}_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
         if synthetic_data:
-            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
         else:
-            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+        if synthetic_data:
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+        else:
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
         self.ref = ref
         if synthetic_data:
-            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv").dropna()
         else:
-            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
         if "protein_id" not in self.ref.columns:
             self.ref = pd.merge(self.ref, self.upper_edges[["accession","protein_id"]].drop_duplicates(), left_on = "Accession", right_on="accession", how = 'left').drop('accession', axis = 1)
-        self.upper_edges = self.upper_edges.loc[self.upper_edges["Prob"] >= min_detect]
         self.N_prot = len(self.upper_edges.groupby("accession"))
         self.protein_to_spectra = pd.merge(self.upper_edges, self.lower_edges, left_on = "peptide_id", right_on = "Peptide", how = 'left').drop("Peptide", axis = 1)
         self.protein_to_spectra["protein_prediction"] = self.protein_to_spectra["protein_id"].isin(self.sol['id'])
@@ -182,7 +186,7 @@ FNR : {round(FNR, 3)}
 PPV : {round(PPV, 3)}
 NPV : {round(NPV, 3)}""")
     
-    def analyse_df(self, notes = "", detect_model = "DbyDeep") -> pd.DataFrame:
+    def analyse_df(self, notes = "") -> pd.DataFrame:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
         false_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False]
         df = self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates()
@@ -199,7 +203,7 @@ NPV : {round(NPV, 3)}""")
         return pd.DataFrame({
             "Dataset": self.prefix,
             "Notes": notes,
-            "Detectability Model": detect_model,
+            "Detectability Model": self.detect_model,
             "Threshold": self.threshold,
             "Max Score Edges": self.max_edges,
             "Spectra Error Rate": self.spectra_error_rate,
@@ -290,9 +294,9 @@ class Model_Analyses:
         return analyses
 #%%
 prefix = "yeast_10fmol_nonoise_ap3"
-for (threshold, max_edges, psi1, psi2, min_detect) in [(7, 4, 1, 10, 0.00)]:
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(7, 4, 1, 10, 0.00, 1)]:
     ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
-    results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, threshold = threshold, max_edges = max_edges)
+    results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
     # results.print_stats_proteins()
@@ -391,15 +395,15 @@ for (threshold, n_edges) in [(7,2),(7,3),(7,4),(7,10),(12,2),(12,3),(12,4),(17,2
 # %% Add a real data analysis
 prefix = "yeast_10fmol_nonoise"
 ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
-for (threshold, max_edges, psi1, psi2, min_detect) in [(60, 4, 1, 10, 0.00), (70, 4, 1, 10, 0.00), (1000, 4, 1, 10, 0.00)]:
-    results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, threshold = threshold, max_edges = max_edges)
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(60, 4, 1, 10, 0.00, 1)]:
+    results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
 
     Analyses.Add_Analysis(results.analyse_df())
 # %% Add a synthetic data analysis
 for i in range(1,6):
     prefix = f"test_synth{i}"
-    for (min_detect, spectra_error_rate, false_edges, psi1, psi2) in [(0.0, 0.4, 2, 1, 10)]:
-        ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
-        results = Results_Analysis(prefix, psi1, psi2, min_detect, ref, spectra_error_rate = spectra_error_rate, false_edges = false_edges, synthetic_data = True)
+    for (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) in [(0.8, 2, 0.8, 1, 1, 10)]:
+        ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+        results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, spectra_error_rate = spectra_error_rate, false_edges = false_edges, synthetic_data = True)
         Analyses.Add_Analysis(results.analyse_df())
 # %%

@@ -12,16 +12,16 @@ void Solution::Print(const std::vector<Peptide*> peptides , std::vector<Spectrum
             std::cout << *identification << std::endl;
         }
     }   
-    if (spectra.size() && spectra[0]->Is_Simulated()) {
-        std::cout << "\nNumber of wrong selected edges : ";
-        unsigned int compteur = 0;
-        for (const Identification* identification : identifications) {
-            if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-                compteur++;
-            }
-        }
-        std::cout << compteur << std::endl;
-    }
+    // if (spectra.size() && spectra[0]->Is_Simulated()) {
+    //     std::cout << "\nNumber of wrong selected edges : ";
+    //     unsigned int compteur = 0;
+    //     for (const Identification* identification : identifications) {
+    //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+    //             compteur++;
+    //         }
+    //     }
+    //     std::cout << compteur << std::endl;
+    // }
     /*
     std::cout << "\nSelected edges :" << std::endl;
     for (const Identification* identification : identifications) {
@@ -47,16 +47,16 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
                 output_file << *identification << std::endl;
             }
         }
-        if (spectra.size() && spectra[0]->Is_Simulated()) {
-            output_file << "\nNumber of wrong selected edges : ";
-            unsigned int compteur = 0;
-            for (const Identification* identification : identifications) {
-                if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-                    compteur++;
-                }
-            }
-            output_file << compteur << std::endl;
-        }
+        // if (spectra.size() && spectra[0]->Is_Simulated()) {
+        //     output_file << "\nNumber of wrong selected edges : ";
+        //     unsigned int compteur = 0;
+        //     for (const Identification* identification : identifications) {
+        //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+        //             compteur++;
+        //         }
+        //     }
+        //     output_file << compteur << std::endl;
+        // }
         output_file.close();
         std::cout << "Saved solution to " << file_name << std::endl;
     }
@@ -82,16 +82,16 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
                 output_file << *identification << std::endl;
             }
         }
-        if (spectra.size() && spectra[0]->Is_Simulated()) {
-            output_file << "\nNumber of wrong selected edges : ";
-            unsigned int compteur = 0;
-            for (const Identification* identification : identifications) {
-                if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-                    compteur++;
-                }
-            }
-            output_file << compteur << std::endl;
-        }
+        // if (spectra.size() && spectra[0]->Is_Simulated()) {
+        //     output_file << "\nNumber of wrong selected edges : ";
+        //     unsigned int compteur = 0;
+        //     for (const Identification* identification : identifications) {
+        //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+        //             compteur++;
+        //         }
+        //     }
+        //     output_file << compteur << std::endl;
+        // }
         output_file.close();
         std::cout << "Saved solution to " << file_name << std::endl;
     }
@@ -114,16 +114,16 @@ void Solution::Save(std::vector<Spectrum*> spectra, std::ofstream& output_file, 
             output_file << *identification << std::endl;
         }
     }
-    if (spectra.size() && spectra[0]->Is_Simulated()) {
-        output_file << "\nNumber of wrong selected edges : ";
-        unsigned int compteur = 0;
-        for (const Identification* identification : identifications) {
-            if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-                compteur++;
-            }
-        }
-        output_file << compteur << std::endl;
-    }
+    // if (spectra.size() && spectra[0]->Is_Simulated()) {
+    //     output_file << "\nNumber of wrong selected edges : ";
+    //     unsigned int compteur = 0;
+    //     for (const Identification* identification : identifications) {
+    //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+    //             compteur++;
+    //         }
+    //     }
+    //     output_file << compteur << std::endl;
+    // }
     output_file << std::endl << std::endl;
 }
 
@@ -141,15 +141,15 @@ void Solution::Save(std::vector<Spectrum*> spectra, std::ofstream& output_file, 
             output_file << *identification << std::endl;
         }
     }
-    if (spectra.size() && spectra[0]->Is_Simulated()) {
-        output_file << "\nNumber of wrong selected edges : ";
-        unsigned int compteur = 0;
-        for (const Identification* identification : identifications) {
-            if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-                compteur++;
-            }
-        }
-        output_file << compteur << std::endl;
-    }
+    // if (spectra.size() && spectra[0]->Is_Simulated()) {
+    //     output_file << "\nNumber of wrong selected edges : ";
+    //     unsigned int compteur = 0;
+    //     for (const Identification* identification : identifications) {
+    //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
+    //             compteur++;
+    //         }
+    //     }
+    //     output_file << compteur << std::endl;
+    // }
     output_file << std::endl << std::endl;
 }

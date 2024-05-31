@@ -255,6 +255,8 @@ public:
     */
     void Load_Spectra(const std::string file_name, unsigned int max_pics = 60);
 
+    void Load_Synthetic_Spectra(const std::string file_name);
+
     /*
     * G�n�re un ensemble de spectres simul�s � partir des prot�ines, des peptides th�oriques et des probabilit�s.
     * Pour cela, il faut fournir un �chantillon sous la forme d'une map associant des num�ros de prot�ines � des abondances.
@@ -268,6 +270,8 @@ public:
     * Cette fonction prend en param�tre un std::unordered_map<std::size_t, unsigned int> (correspond au sample fourni), un std::vector<Protein*>, un std::vector<Peptide*> et un std::vector<Spectrum*> (liste de spectre � remplir).
     */
     void Simulated_Sample(std::unordered_map<std::size_t, unsigned int> sample, void (simulated_sample_function)(std::unordered_map<std::size_t, unsigned int> sample, std::vector<Protein*> proteins, std::vector<Peptide*> peptides, std::vector<Spectrum*> spectra));
+
+    void Simulated_Sample(std::unordered_map<std::size_t, unsigned int> sample, std::string output, float error_rate = 0.f);
 
     //void Load_Scores(const std::string file_name);
     /*
@@ -365,7 +369,7 @@ public:
 
     void Run_Multiple_Tests(std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters, std::string prefix = "");
 
-    void Run_Test_Synthetic_Data(std::string prefix, std::string digestion_file_name, float min_detect = 0.0, float spectra_error_rate = 0.0, unsigned int false_edges = 1, float psi1 = 1, float psi2 = 10);
+    void Run_Test_Synthetic_Data(std::string prefix, std::string fasta, int detectability_model, float min_detect = 0.0, float spectra_error_rate = 0.0, unsigned int false_edges = 1, float psi1 = 1, float psi2 = 10);
 
     //void Evaluate_Solution();
 
