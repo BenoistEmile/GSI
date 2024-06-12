@@ -95,8 +95,9 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
                 sequence = "";
                 if (line.substr(0, 4) == ">sp|") {
                     index1 = 4;
-                }
-                else {
+                } else if (line.substr(0, 4) == ">tr|") {
+                    index1 = 4;
+                } else {
                     index1 = 1;
                 }
                 index2 = line.find("|", index1);

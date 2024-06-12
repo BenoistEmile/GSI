@@ -187,7 +187,7 @@ void Model::Define_Probabilities(const std::string file_name, float min_proba) {
     proba_file.close();
 }
 
-void Model::Define_Probabilities_2(const std::string file_name, const float min_proba) {
+void Model::Define_Probabilities_2(const std::string file_name, const float min_proba, bool L2I) {
     std::ifstream proba_file(std::filesystem::current_path().generic_string() + "/data/digestion/" + file_name + ".csv");
     if (proba_file) {
         bool first_line = true;
@@ -216,6 +216,9 @@ void Model::Define_Probabilities_2(const std::string file_name, const float min_
             protein = std::stoi(row[index_protein]);
             proba = std::stof(row[index_proba]);
             sequence = row[index_seq];
+            if (L2I) {
+                std::replace(sequence.begin(), sequence.end(), 'L', 'I');
+            }
             if (proba >= min_proba) {
                 if (protein != previous_protein) {
                     previous_protein = protein;

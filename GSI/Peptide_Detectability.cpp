@@ -35,7 +35,7 @@ void Model::Peptide_Detectability(std::string env_name, std::string digestion_fi
     }
 }
 
-void Model::Peptide_Detectability(int detectability_model, float min_detect, int minimum_number_of_amino_acids, int maximum_number_of_amino_acids) {
+void Model::Peptide_Detectability(int detectability_model, float min_detect, int minimum_number_of_amino_acids, int maximum_number_of_amino_acids, bool L2I) {
     int return_code;
     this->In_Silico_Digestion_2("digestion_file", minimum_number_of_amino_acids, maximum_number_of_amino_acids);
     switch (detectability_model) {
@@ -71,5 +71,5 @@ void Model::Peptide_Detectability(int detectability_model, float min_detect, int
             break;
         }
     }
-    this->Define_Probabilities_2("output_file", min_detect);
+    this->Define_Probabilities_2("output_file", min_detect, L2I);
 }

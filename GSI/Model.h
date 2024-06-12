@@ -186,7 +186,7 @@ public:
     * DbyDeep : 1, AP3 : 2.
     * Pour ne pas faire tourner de modèle et réutiliser les résultats précédents => 0.
     */
-    void Peptide_Detectability(int detectability_model = 1, float min_detect = 0.0, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25);
+    void Peptide_Detectability(int detectability_model = 1, float min_detect = 0.0, int minimum_number_of_amino_acids = 7, int maximum_number_of_amino_acids = 25, bool L2I = false);
 
     /*
     * G�n�re les spectres th�oriques � partir des spectres th�oriques avec la possibilit� d'ajouter des modifications.
@@ -231,7 +231,7 @@ public:
     /*
     * Charge les peptides et les arêtes protéines-peptides.
     */
-    void Define_Probabilities_2(const std::string file_name, const float min_proba = 0.0);
+    void Define_Probabilities_2(const std::string file_name, const float min_proba = 0.0, bool L2I = false);
     /*
     *
     */
