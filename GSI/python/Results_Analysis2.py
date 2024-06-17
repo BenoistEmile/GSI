@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Union
 import pandas as pd
 import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 
 root_dir = Path.cwd().parent
 data_dir = root_dir / "data"
