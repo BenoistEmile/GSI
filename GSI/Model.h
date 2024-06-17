@@ -300,9 +300,11 @@ public:
     */
     void Compute_Score_SpecOMS(std::ofstream& output_file, unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
     /*
-    * Charges les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle
+    * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle
     */
     void Load_Scores_SpecOMS(const std::string file_name);
+
+    void Load_Scores_Prospect(const std::string file_name, const int min_length = 7, const int max_length = 25, const int min_pics = 6);
 
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
