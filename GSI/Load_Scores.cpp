@@ -18,6 +18,36 @@ bool Same_Peptide(const std::string seq_1, const std::string seq_2, const int mi
     }
 }
 
+int LevensteinDistance(const std::string& seq_1, const std::string& seq_2) {
+    int m = seq_1.length();
+    int n = seq_2.length();
+    std::vector<std::vector<int>> D(m+1, std::vector<int>(n+1, 0));
+
+    // Initialisation de la matrice D
+    for (int i = 0; i <= m; i++) {
+        D[i][0] = i;
+    }
+    for (int j = 0; j <= n; j++) {
+        D[0][j] = j;
+    }
+
+    // Cout de substitution
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (seq_1[i - 1] != seq_2[j - 1]) {
+                D[i][j] = 1;
+            }
+        }
+    }
+
+    for (int i =1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            D[i][j] = std::min(D[i-1][j] + 1, std::min(D[i][j-1] + 1, D[i-1][j-1] + D[i][j]));
+        }
+    }
+    return D[m][n];
+}
+
 void Model::Load_Scores(const std::string file_name, std::vector<Score*>(parser)(std::ifstream& file)) {
     std::ifstream file(std::filesystem::current_path().generic_string() + "/data/scores/" + file_name);
     if (file) {
@@ -125,11 +155,13 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
             if (sequence.size() < min_length || sequence.size() > max_length || shared_masses < min_pics) {
                 continue;
             }
+
             for (auto& iter : peptides) {
                 // if (iter->Get_Sequence() == sequence) {
-                if (Same_Peptide(iter->Get_Sequence(), sequence, 7, 25, 3)) {
+                if (Same_Peptide(iter->Get_Sequence(), sequence, 6, 25, 3)) {
+                // if (LevensteinDistance(iter->Get_Sequence(), sequence) <= 2) {
                     spectrum_scores = spectra_scores.find(spectrum_id);
-                    std::cout << "Peptide : " << iter->Get_Sequence() << ", sequence : " << sequence << std::endl;
+                    std::cout << "Peptide : " << iter->Get_Sequence() << ", sequence : " << sequence << ", score : " << LevensteinDistance(iter->Get_Sequence(), sequence) << std::endl;
                     if (spectrum_scores == spectra_scores.end()) {
                         spectra_scores[spectrum_id] = new std::vector<std::tuple<std::size_t, int>>;
                         spectra_scores.at(spectrum_id)->push_back({iter->Get_Id(), shared_masses});
@@ -140,6 +172,24 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
                     break;
                 }
             }
+
+            // int score, best_score, best_peptide;
+            // for (auto& iter : peptides) {
+            //     score = LevensteinDistance(iter->Get_Sequence(), sequence);
+            //     if (score < best_score) {
+            //         best_score = score;
+            //         best_peptide = iter->Get_Id();
+            //     }
+            // }
+            // spectra_scores.find(spectrum_id);
+            // std::cout << "Peptide : " << iter->Get_Sequence() << ", sequence : " << sequence << ", score : " << LevensteinDistance(iter->Get_Sequence(), sequence) << std::endl;
+            // if (spectrum_scores == spectra_scores.end()) {
+            //     spectra_scores[spectrum_id] = new std::vector<std::tuple<std::size_t, int>>;
+            //     spectra_scores.at(spectrum_id)->push_back({iter->Get_Id(), shared_masses});
+            // }
+            // else {
+            //     spectrum_scores->second->push_back({iter->Get_Id(), shared_masses});
+            // }
         }
         for (auto& spectrum_scores : spectra_scores) {
             scores_sum = 0;
