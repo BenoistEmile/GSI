@@ -62,6 +62,53 @@ class Results_Analysis:
         self.protein_to_spectra["protein_truth"] = self.protein_to_spectra["protein_id"].isin(self.ref['protein_id'])
         self.protein_to_spectra["has_spectrum"] = self.protein_to_spectra["protein_id"].isin(self.protein_to_spectra.dropna()["protein_id"])
         self.protein_to_spectra["prediction_category"] = self.protein_to_spectra.apply(prediction_category, axis = 1)
+    
+    def draw_graph(self, only_true = False, only_false = False, figsize = (150, 10), dpi = 250) -> None:
+        G = nx.DiGraph()
+        colors = []
+        labels = {}
+        if only_true:
+            parse_df = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]].dropna()
+        elif only_false:
+            parse_df = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False].dropna()
+        else:
+            parse_df = self.protein_to_spectra.dropna()
+        for index, row in parse_df[["protein_id", "peptide_id"]].drop_duplicates().iterrows():
+            protein_id = int(row["protein_id"])
+            peptide_id = int(row["peptide_id"])
+            protein = f"protein_{protein_id}"
+            peptide = f"peptide_{peptide_id}"
+            if protein not in G.nodes:
+                G.add_node(protein, level = 1)
+                labels[protein] = 0
+                if protein_id in self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"], "protein_id"].drop_duplicates():
+                    colors.append("g")
+                else:
+                    colors.append("r")
+            if peptide not in G.nodes:
+                G.add_node(peptide, level = 2)
+                labels[peptide] = 0
+                colors.append("b")
+            G.add_edge(protein, peptide, color = 0)
+        for index, row in parse_df[["peptide_id", "Spectrum", "Score"]].drop_duplicates().iterrows():
+            peptide = f"peptide_{int(row["peptide_id"])}"
+            spectrum = f"spectrum_{int(row["Spectrum"])}"
+            if spectrum not in G.nodes:
+                G.add_node(spectrum, level = 3)
+                # labels[spectrum] = 0
+                colors.append("b")
+            G.add_edge(peptide, spectrum, color = row["Score"])
+        for index, value in self.protein_to_spectra[["protein_id","peptide_id"]].drop_duplicates().groupby("protein_id").count()["peptide_id"].items():
+            if f"protein_{index}" in labels.keys():
+                labels[f"protein_{index}"] = value
+        for index, value in self.protein_to_spectra[["protein_id","peptide_id"]].drop_duplicates().groupby("peptide_id").count()["protein_id"].items():
+            if f"peptide_{index}" in labels.keys():
+                labels[f"peptide_{index}"] = value
+        edge_colors = [G[u][v]['color'] for u,v in G.edges()]
+        plt.subplots(1, 1, figsize = figsize, dpi = dpi)
+        pos = nx.nx_pydot.graphviz_layout(G, prog = "dot")
+        nx.draw(G, pos = pos, with_labels = False, node_size = 100, node_color = colors, labels = labels)#, edge_color = edge_colors)
+        plt.show()
 
     def print_stats_proteins(self) -> None:
         N_edges = len(self.upper_edges)
@@ -102,7 +149,7 @@ Number of proteins-spectra paths : {N_path_prot_spectra}""")
     def print_stats_true_proteins(self) -> None:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
         N_proteins = len(true_proteins["protein_id"].drop_duplicates())
-        N_spectra = len(true_proteins.dropna())
+        N_spectra = len(true_proteins["Spectrum"].dropna().drop_duplicates())
         N_prot_spectra = len(true_proteins.dropna()["protein_id"].drop_duplicates())
         print(f"""Number of true proteins : {N_proteins}
 Number of associated spectra : {N_spectra}
@@ -121,7 +168,7 @@ Number of proteins with spectra : {N_prot_spectra}""")
     def print_stats_false_proteins(self) -> None:
         false_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False]
         N_proteins = len(false_proteins["protein_id"].drop_duplicates())
-        N_spectra = len(false_proteins.dropna())
+        N_spectra = len(false_proteins["Spectrum"].dropna().drop_duplicates())
         N_prot_spectra = len(false_proteins.dropna()["protein_id"].drop_duplicates())
         print(f"""Number of false proteins : {N_proteins}
 Number of associated spectra : {N_spectra}
@@ -219,10 +266,10 @@ NPV : {round(NPV, 3)}""")
             "Proteins with Spectra": len(self.protein_to_spectra.dropna()["protein_id"].drop_duplicates()),
             "Proteins Spectra Paths": len(self.protein_to_spectra[["protein_id","Spectrum"]].dropna()),
             "Target Proteins": len(true_proteins["protein_id"].drop_duplicates()),
-            "Target Proteins associated Spectra": len(true_proteins.dropna()),
+            "Target Proteins associated Spectra": len(true_proteins["Spectrum"].dropna().drop_duplicates()),
             "Target Proteins with Spectra": len(true_proteins.dropna()["protein_id"].drop_duplicates()),
             "Decoy Proteins": len(false_proteins["protein_id"].drop_duplicates()),
-            "Decoy Proteins associated Spectra": len(false_proteins.dropna()),
+            "Decoy Proteins associated Spectra": len(false_proteins["Spectrum"].dropna().drop_duplicates()),
             "Decoy Proteins with Spectra": len(false_proteins.dropna()["protein_id"].drop_duplicates()),
             "Identifiable Proteins Ratio": len(true_proteins["protein_id"].drop_duplicates())/len(false_proteins["protein_id"].drop_duplicates()),
             "Score Edges": len(self.lower_edges),
@@ -295,9 +342,9 @@ class Model_Analyses:
         analyses.Load_Analyses(file_name)
         return analyses
 #%%
-prefix = "yeast_10fmol_nonoise_ap3"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(7, 4, 1, 10, 0.00, 1)]:
-    ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep = ";")
+prefix = "cytoc"
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 1)]:
+    ref = pd.read_csv(data_dir / 'cytoc_ref.csv', sep = ";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
@@ -404,8 +451,10 @@ for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(60, 4, 1, 
 # %% Add a synthetic data analysis
 for i in range(1,6):
     prefix = f"test_synth{i}"
-    for (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) in [(0.8, 2, 0.8, 1, 1, 10)]:
+    # for (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) in [(0.9, 1, 0.0, 1, 1, 10)]:
+    (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) = (0.00, 2, 0.0, 1, 1, 10)
+    for spectra_error_rate in [0.0]:#, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95]:
         ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
         results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, spectra_error_rate = spectra_error_rate, false_edges = false_edges, synthetic_data = True)
-        Analyses.Add_Analysis(results.analyse_df())
+        # Analyses.Add_Analysis(results.analyse_df())
 # %%
