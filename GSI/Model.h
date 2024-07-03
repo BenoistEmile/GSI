@@ -323,6 +323,9 @@ public:
     */
     void Print_Solution(bool ident = false) const {
         solution.Print(peptides ,spectra, ident);
+        for (auto& couple : solution.abundances) {
+            std::cout << couple.first << " : " << this->Get_Protein(couple.first).Get_Accession() << std::endl;
+        }
     };
 
     /*
