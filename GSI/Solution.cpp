@@ -66,37 +66,35 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
 }
 
 void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name, const std::vector<Protein*>& proteins, bool overwrite, bool save_proteins, bool save_ident) const {
-    std::ofstream output_file;
-    std::filesystem::path file_path = std::filesystem::current_path() / "solution" / file_name;
-    file_path += ".csv";
-    if (!fileExists(file_path) || overwrite) {
-        output_file.open(file_path);
-        output_file << "id,accession,abundance" << std::endl;
-        if (save_proteins) {
-            for (auto& couple : abundances) {
-                output_file << couple.first << "," << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
-            }
+    std::ofstream prot_output_file, ident_output_file;
+    std::filesystem::path prot_file_path = std::filesystem::current_path() / "solution" / file_name;
+    prot_file_path += ".csv";
+    std::filesystem::path ident_file_path = std::filesystem::current_path() / "solution" / "ident_";
+    ident_file_path += file_name + ".csv";
+    if ((!fileExists(prot_file_path) || overwrite) && save_proteins) {
+        prot_output_file.open(prot_file_path);
+        prot_output_file << "id,accession,abundance" << std::endl;
+        for (auto& couple : abundances) {
+            prot_output_file << couple.first << "," << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
         }
-        if (save_ident) {
-            for (const Identification* identification : identifications) {
-                output_file << *identification << std::endl;
-            }
-        }
-        // if (spectra.size() && spectra[0]->Is_Simulated()) {
-        //     output_file << "\nNumber of wrong selected edges : ";
-        //     unsigned int compteur = 0;
-        //     for (const Identification* identification : identifications) {
-        //         if (spectra[identification->spectrum]->Get_Origin()->peptide != identification->peptide) {
-        //             compteur++;
-        //         }
-        //     }
-        //     output_file << compteur << std::endl;
-        // }
-        output_file.close();
+        prot_output_file.close();
         std::cout << "Saved solution to " << file_name << std::endl;
     }
     else {
         std::cout << "ERROR : There already is a file named : " << file_name << std::endl;
+    }
+    if ((!fileExists(ident_file_path) || overwrite) && save_ident) {
+        ident_output_file.open(ident_file_path);
+        ident_output_file << "peptide,spectrum" << std::endl;
+        for (const Identification* identification : identifications) {
+            std::cout << identification->peptide << "," << identification->spectrum << std::endl;
+            ident_output_file << identification->peptide << "," << identification->spectrum << std::endl;
+        }
+        ident_output_file.close();
+        std::cout << "Saved solution to ident_" << file_name << std::endl;
+    }
+    else {
+        std::cout << "ERROR : There already is a file named : ident_" << file_name << std::endl;
     }
 }
 
