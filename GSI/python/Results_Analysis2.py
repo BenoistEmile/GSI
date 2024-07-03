@@ -42,18 +42,19 @@ class Results_Analysis:
         self.digestion_dir = self.data_dir / "digestion"
         # self.upper_edges = pd.read_csv(self.digestion_dir / f"{prefix}_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
         if synthetic_data:
-            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{psi1:.1f}_{psi2:.1f}.csv")
         else:
-            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+            self.upper_edges = pd.read_csv(self.models_dir / f"upper_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{psi1:.1f}_{psi2:.1f}_{min_detect:.2f}.csv")
         if synthetic_data:
-            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{psi1:.1f}_{psi2:.1f}.csv")
         else:
-            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+            self.lower_edges = pd.read_csv(self.models_dir / f"lower_edges_{prefix}_{detect_model}_{threshold}_{max_edges}_{psi1:.1f}_{psi2:.1f}_{min_detect:.2f}.csv")
+        self.selected_peptides = pd.read_csv(self.sol_dir / f"ident_results_{prefix}_{detect_model}_{threshold}_{max_edges}_{psi1:.1f}_{psi2:.1f}_{min_detect:.2f}.csv")
         self.ref = ref
         if synthetic_data:
-            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv").dropna()
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{psi1:.1f}_{psi2:.1f}.csv").dropna()
         else:
-            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{threshold}_{max_edges}_{round(psi1)}_{round(psi2)}_{min_detect:.2f}.csv")
+            self.sol = pd.read_csv(self.sol_dir / f"results_{prefix}_{detect_model}_{threshold}_{max_edges}_{psi1:.1f}_{psi2:.1f}_{min_detect:.2f}.csv")
         if "protein_id" not in self.ref.columns:
             self.ref = pd.merge(self.ref, self.upper_edges[["accession","protein_id"]].drop_duplicates(), left_on = "Accession", right_on="accession", how = 'left').drop('accession', axis = 1)
         self.N_prot = len(self.upper_edges.groupby("accession"))
@@ -62,6 +63,9 @@ class Results_Analysis:
         self.protein_to_spectra["protein_truth"] = self.protein_to_spectra["protein_id"].isin(self.ref['protein_id'])
         self.protein_to_spectra["has_spectrum"] = self.protein_to_spectra["protein_id"].isin(self.protein_to_spectra.dropna()["protein_id"])
         self.protein_to_spectra["prediction_category"] = self.protein_to_spectra.apply(prediction_category, axis = 1)
+        self.protein_to_spectra = pd.merge(self.protein_to_spectra, self.selected_peptides, left_on = ["peptide_id", "Spectrum"], right_on = ["peptide", "spectrum"], how = "left", indicator = "Selected")
+        self.protein_to_spectra.drop(["peptide", "spectrum"], inplace = True, axis = 1)
+        self.protein_to_spectra["Selected"] = np.where(self.protein_to_spectra["Selected"] == "both", True, False)
     
     def draw_graph(self, only_true = False, only_false = False, figsize = (150, 10), dpi = 250) -> None:
         G = nx.DiGraph()
@@ -81,7 +85,7 @@ class Results_Analysis:
             if protein not in G.nodes:
                 G.add_node(protein, level = 1)
                 labels[protein] = 0
-                if protein_id in self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"], "protein_id"].drop_duplicates():
+                if protein_id in self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"], "protein_id"].drop_duplicates().unique():
                     colors.append("g")
                 else:
                     colors.append("r")
@@ -235,6 +239,10 @@ FNR : {round(FNR, 3)}
 PPV : {round(PPV, 3)}
 NPV : {round(NPV, 3)}""")
     
+    def print_results_info(self):
+        print(self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates().groupby("prediction_category").count())
+        print(self.protein_to_spectra.loc[(self.protein_to_spectra["prediction_category"] == "FP") | (self.protein_to_spectra["prediction_category"] == "TP"), "accession"].drop_duplicates())
+    
     def analyse_df(self, notes = "") -> pd.DataFrame:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
         false_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False]
@@ -342,9 +350,9 @@ class Model_Analyses:
         analyses.Load_Analyses(file_name)
         return analyses
 #%%
-prefix = "cytoc"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 1)]:
-    ref = pd.read_csv(data_dir / 'cytoc_ref.csv', sep = ";")
+prefix = "OVA_SpecOMS"
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1000, 1, 0.00, 1)]:
+    ref = pd.read_csv(data_dir / 'ova_ref.csv', sep = ";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
@@ -353,6 +361,7 @@ for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
     # results.print_stats_predictions()
+    results.print_results_info()
     print("==============================================================")
 # %%
 fig, axs = plt.subplots(2,1, sharex = True, figsize = (7,10))
@@ -457,4 +466,12 @@ for i in range(1,6):
         ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
         results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, spectra_error_rate = spectra_error_rate, false_edges = false_edges, synthetic_data = True)
         # Analyses.Add_Analysis(results.analyse_df())
+# %%
+peptide_spectra = {}
+for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"], ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates().iterrows():
+    peptide_spectra[row["Spectrum"]] = row["Score"]
+count = 0
+for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"] == False, ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates().iterrows():
+    if peptide_spectra[row["Spectrum"]] < row["Score"]:
+        count += 1
 # %%
