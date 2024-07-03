@@ -291,7 +291,10 @@ void Model::In_Silico_Digestion_2(std:: string file_name, int minimum_number_of_
                     if (sequences[j].find("B") != std::string::npos || n_terms[j].find("B") != std::string::npos || c_terms[j].find("B") != std::string::npos) {
                         continue;
                     }
-                    if (sequences[j].find("Z") != std::string::npos || n_terms[j].find("Z") != std::string::npos || c_terms[j].find("Z") != std::string::npos) {
+                    // if (sequences[j].find("Z") != std::string::npos || n_terms[j].find("Z") != std::string::npos || c_terms[j].find("Z") != std::string::npos) {
+                    //     continue;
+                    // }
+                    if (sequences[j].find("O") != std::string::npos || n_terms[j].find("O") != std::string::npos || c_terms[j].find("O") != std::string::npos) {
                         continue;
                     }
                     output_file << sequences[j] << ',' << n_terms[j] << ',' << c_terms[j] << ",ZZZZZZZZZZZZZZZ,ZZZZZZZZZZZZZZZ,NA," << proteins.at(i)->Get_Accession() << "," << i << std::endl;

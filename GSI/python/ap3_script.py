@@ -11,6 +11,7 @@ output.rename(columns = {"Peptide detectability": "Prob", "Peptide sequence": "p
 output["U"] = output["peptide"].str.contains("U")
 output["B"] = output["peptide"].str.contains("B")
 output["Z"] = output["peptide"].str.contains("Z")
-output["exclude seq"] = output[["U","B","Z"]].any(axis = 1)
+output["O"] = output["peptide"].str.contains("O")
+output["exclude seq"] = output[["U","B","Z","O"]].any(axis = 1)
 output.drop(output[output["exclude seq"]].index, inplace = True)
 output[["peptide", "protein_id", "Prob"]].to_csv(gsi_path / 'data' / 'digestion' / 'output_file.csv', index = False)
