@@ -7,9 +7,9 @@ bool Same_Peptide(const std::string seq_1, const std::string seq_2, const int mi
     if (seq_1.size() < min_size || seq_2.size() < min_size || seq_1.size() > max_size || seq_2.size() > max_size) {
         return false;
     }
-    else if (abs(seq_1.size() - seq_2.size()) > max_len_diff) {
-        return false;
-    }
+    // else if (abs(seq_1.size() - seq_2.size()) > max_len_diff) {
+    //     return false;
+    // }
     else if (seq_1.find(seq_2) != seq_1.npos || seq_2.find(seq_1) != seq_2.npos) {
         return true;
     }
@@ -66,7 +66,7 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
         std::vector<std::string> row;
         std::string word, line, sequence;
         int index_spectrum, index_peptide, index_shared_masses, shared_masses;
-        unsigned int scores_sum, count;
+        unsigned int scores_sum, count, len_to_remove;
         std::unordered_map<std::size_t, std::vector<std::tuple<std::size_t, int>>*> spectra_scores;
         std::unordered_map<std::size_t, std::vector<std::tuple<std::size_t, int>>*>::const_iterator spectrum_scores;
         std::size_t spectrum_id;
@@ -80,24 +80,41 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                 first_line = false;
                 index_spectrum = std::find(row.begin(), row.end(), "spectrum index") - row.begin();
                 index_peptide = std::find(row.begin(), row.end(), "sequence after specfit") - row.begin();
+                if (index_peptide == row.size()) {
+                    index_peptide = std::find(row.begin(), row.end(), "peptide") - row.begin();
+                    if (index_peptide == row.size()) {
+                        throw "Can't find peptide sequences";
+                    }
+                }
                 index_shared_masses = std::find(row.begin(), row.end(), "score after specfit") - row.begin();
+                if (index_shared_masses == row.size()) {
+                    index_shared_masses = std::find(row.begin(), row.end(), "sharedMassesAfterAlign") - row.begin();
+                    if (index_peptide == row.size()) {
+                        throw "Can't find shared masses";
+                    }
+                }
                 continue;
             }
             sequence = row[index_peptide];
-            for (auto iter = sequence.begin(); iter != sequence.end(); iter++) {
-                if (*iter == '(') {
-                    std::string::iterator iter2 = iter;
-                    while (*iter2 != ')') {
-                        iter2++;
+            for (int i = 0; i < sequence.length(); i++) {
+                if (sequence[i] == '(') {
+                    int len_to_remove = 1;
+                    int begin_remove = i;
+                    while (sequence[i] != ')') {
+                        i++;
+                        len_to_remove++;
                     }
-                    iter2++;
-                    sequence.erase(iter, iter2);
+                    sequence.erase(begin_remove, len_to_remove);
+                    i -= len_to_remove;
                 }
             }
             spectrum_id = std::stoi(row[index_spectrum]);
             shared_masses = std::stoi(row[index_shared_masses]);
+            bool found_peptide = false;
             for (auto& iter : peptides) {
-                if (iter->Get_Sequence() == sequence) {
+                // if (iter->Get_Sequence() == sequence) {
+                if (Same_Peptide(iter->Get_Sequence(), sequence, 7, 25, 3)) {
+                    found_peptide = true;
                     spectrum_scores = spectra_scores.find(spectrum_id);
                     if (spectrum_scores == spectra_scores.end()) {
                         spectra_scores[spectrum_id] = new std::vector<std::tuple<std::size_t, int>>;
@@ -109,6 +126,9 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                     break;
                 }
             }
+            // if (not found_peptide) {
+            //     std::cout << spectrum_id << ", " << sequence << std::endl;
+            // }
         }
         for (auto& spectrum_scores : spectra_scores) {
             scores_sum = 0;
@@ -161,10 +181,11 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
                 if (Same_Peptide(iter->Get_Sequence(), sequence, 6, 25, 3)) {
                 // if (LevensteinDistance(iter->Get_Sequence(), sequence) <= 2) {
                     spectrum_scores = spectra_scores.find(spectrum_id);
-                    std::cout << "Peptide : " << iter->Get_Sequence() << ", sequence : " << sequence << ", score : " << LevensteinDistance(iter->Get_Sequence(), sequence) << std::endl;
+                    // std::cout << "Peptide : " << iter->Get_Sequence() << ", sequence : " << sequence << ", score : " << LevensteinDistance(iter->Get_Sequence(), sequence) << std::endl;
                     if (spectrum_scores == spectra_scores.end()) {
                         spectra_scores[spectrum_id] = new std::vector<std::tuple<std::size_t, int>>;
                         spectra_scores.at(spectrum_id)->push_back({iter->Get_Id(), shared_masses});
+                        std::cout << iter->Get_Sequence() << ", " << sequence << ", " << shared_masses << std::endl;
                     }
                     else {
                         spectrum_scores->second->push_back({iter->Get_Id(), shared_masses});
@@ -190,6 +211,80 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
             // else {
             //     spectrum_scores->second->push_back({iter->Get_Id(), shared_masses});
             // }
+        }
+        for (auto& spectrum_scores : spectra_scores) {
+            scores_sum = 0;
+            for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
+                scores_sum += std::get<1>(*psm);
+            }
+            for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
+                scores.push_back(new Score(std::get<0>(*psm), spectrum_scores.first, 1.0 - ((double)std::get<1>(*psm) / scores_sum)));
+            }
+        }
+    }
+    else {
+        std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
+    }
+}
+
+void Model::Load_Scores_XTandem(const std::string file_name) {
+    std::ifstream file(std::filesystem::current_path() / "data" / "scores" / file_name);
+    if (file) {
+        bool first_line = true;
+        std::vector<std::string> row;
+        std::string word, line, sequence;
+        int index_spectrum, index_peptide, index_shared_masses, shared_masses;
+        unsigned int scores_sum, count, len_to_remove;
+        std::unordered_map<std::size_t, std::vector<std::tuple<std::size_t, int>>*> spectra_scores;
+        std::unordered_map<std::size_t, std::vector<std::tuple<std::size_t, int>>*>::const_iterator spectrum_scores;
+        std::size_t spectrum_id;
+        while (getline(file, line)) {
+            row.clear();
+            std::stringstream s(line);
+            while (getline(s, word, ';')) {
+                row.push_back(word);
+            }
+            if (first_line) {
+                first_line = false;
+                index_spectrum = std::find(row.begin(), row.end(), "Scan") - row.begin();
+                index_peptide = std::find(row.begin(), row.end(), "Sequence") - row.begin();
+                index_shared_masses = std::find(row.begin(), row.end(), "hyperscore") - row.begin();
+                continue;
+            }
+            sequence = row[index_peptide];
+            for (int i = 0; i < sequence.length(); i++) {
+                if (sequence[i] == '(') {
+                    int len_to_remove = 1;
+                    int begin_remove = i;
+                    while (sequence[i] != ')') {
+                        i++;
+                        len_to_remove++;
+                    }
+                    sequence.erase(begin_remove, len_to_remove);
+                    i -= len_to_remove;
+                }
+            }
+            spectrum_id = std::stoi(row[index_spectrum]);
+            shared_masses = std::stoi(row[index_shared_masses]);
+            bool found_peptide = false;
+            for (auto& iter : peptides) {
+                // if (iter->Get_Sequence() == sequence) {
+                if (Same_Peptide(iter->Get_Sequence(), sequence, 0, 50, 3)) {
+                    found_peptide = true;
+                    spectrum_scores = spectra_scores.find(spectrum_id);
+                    if (spectrum_scores == spectra_scores.end()) {
+                        spectra_scores[spectrum_id] = new std::vector<std::tuple<std::size_t, int>>;
+                        spectra_scores.at(spectrum_id)->push_back({iter->Get_Id(), shared_masses});
+                    }
+                    else {
+                        spectrum_scores->second->push_back({iter->Get_Id(), shared_masses});
+                    }
+                    break;
+                }
+            }
+            if (not found_peptide) {
+                std::cout << spectrum_id << ", " << sequence << std::endl;
+            }
         }
         for (auto& spectrum_scores : spectra_scores) {
             scores_sum = 0;

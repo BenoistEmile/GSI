@@ -306,6 +306,8 @@ public:
 
     void Load_Scores_Prospect(const std::string file_name, const int min_length = 7, const int max_length = 25, const int min_pics = 6);
 
+    void Load_Scores_XTandem(const std::string file_name);
+
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
