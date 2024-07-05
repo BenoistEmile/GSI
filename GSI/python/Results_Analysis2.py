@@ -67,52 +67,37 @@ class Results_Analysis:
         self.protein_to_spectra.drop(["peptide", "spectrum"], inplace = True, axis = 1)
         self.protein_to_spectra["Selected"] = np.where(self.protein_to_spectra["Selected"] == "both", True, False)
     
-    def draw_graph(self, only_true = False, only_false = False, figsize = (150, 10), dpi = 250) -> None:
+    def draw_graph(self, figsize = (150, 10), dpi = 250, with_labels = False):# -> None:
         G = nx.DiGraph()
-        colors = []
-        labels = {}
-        if only_true:
-            parse_df = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]].dropna()
-        elif only_false:
-            parse_df = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False].dropna()
-        else:
-            parse_df = self.protein_to_spectra.dropna()
-        for index, row in parse_df[["protein_id", "peptide_id"]].drop_duplicates().iterrows():
-            protein_id = int(row["protein_id"])
+        colors = {"TP": "lime",
+                  "TN": "darkred",
+                  "FP": "red",
+                  "FN": "darkgreen"}
+        for index, row in self.protein_to_spectra.dropna()[["accession", "peptide_id", "protein_prediction","protein_truth", "prediction_category"]].drop_duplicates().iterrows():
+            protein = row["accession"]
             peptide_id = int(row["peptide_id"])
-            protein = f"protein_{protein_id}"
             peptide = f"peptide_{peptide_id}"
             if protein not in G.nodes:
-                G.add_node(protein, level = 1)
-                labels[protein] = 0
-                if protein_id in self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"], "protein_id"].drop_duplicates().unique():
-                    colors.append("g")
-                else:
-                    colors.append("r")
+                G.add_node(protein, level = 1, color = colors[row["prediction_category"]], label = protein)
             if peptide not in G.nodes:
-                G.add_node(peptide, level = 2)
-                labels[peptide] = 0
-                colors.append("b")
+                G.add_node(peptide, level = 2, color = "blue", label = peptide_id)
             G.add_edge(protein, peptide, color = 0)
-        for index, row in parse_df[["peptide_id", "Spectrum", "Score"]].drop_duplicates().iterrows():
+        for index, row in self.protein_to_spectra.dropna()[["peptide_id", "Spectrum", "Score"]].drop_duplicates().iterrows():
             peptide = f"peptide_{int(row["peptide_id"])}"
+            spectrum_id = int(row["Spectrum"])
             spectrum = f"spectrum_{int(row["Spectrum"])}"
             if spectrum not in G.nodes:
-                G.add_node(spectrum, level = 3)
-                # labels[spectrum] = 0
-                colors.append("b")
+                G.add_node(spectrum, level = 3, color = "blue", label = spectrum_id)
             G.add_edge(peptide, spectrum, color = row["Score"])
-        for index, value in self.protein_to_spectra[["protein_id","peptide_id"]].drop_duplicates().groupby("protein_id").count()["peptide_id"].items():
-            if f"protein_{index}" in labels.keys():
-                labels[f"protein_{index}"] = value
-        for index, value in self.protein_to_spectra[["protein_id","peptide_id"]].drop_duplicates().groupby("peptide_id").count()["protein_id"].items():
-            if f"peptide_{index}" in labels.keys():
-                labels[f"peptide_{index}"] = value
-        edge_colors = [G[u][v]['color'] for u,v in G.edges()]
-        plt.subplots(1, 1, figsize = figsize, dpi = dpi)
-        pos = nx.nx_pydot.graphviz_layout(G, prog = "dot")
-        nx.draw(G, pos = pos, with_labels = False, node_size = 100, node_color = colors, labels = labels)#, edge_color = edge_colors)
-        plt.show()
+        # edge_colors = [G[u][v]['color'] for u,v in G.edges()]
+        return G
+        # node_colors = [G[i]["color"] for i in G.nodes()]
+        # node_labels = [G[i]["label"] for i in G.nodes()]
+        # print("graph_created")
+        # plt.subplots(1, 1, figsize = figsize, dpi = dpi)
+        # pos = nx.nx_pydot.graphviz_layout(G, prog = "dot")
+        # nx.draw(G, pos = pos, with_labels = with_labels, node_size = 100, node_color = node_colors, labels = node_labels)
+        # plt.show()
 
     def print_stats_proteins(self) -> None:
         N_edges = len(self.upper_edges)
@@ -384,7 +369,7 @@ class Model_Analyses:
         return analyses
 #%%
 prefix = "OVA_SpecOMS"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1000, 1, 0.00, 1)]:
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 2)]:
     ref = pd.read_csv(data_dir / 'ova_ref.csv', sep = ";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
 
@@ -394,7 +379,8 @@ for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1000
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
     # results.print_stats_predictions()
-    results.print_results_info()
+    # results.print_results_info()
+    results.print_category_stats()
     print("==============================================================")
 # %%
 fig, axs = plt.subplots(2,1, sharex = True, figsize = (7,10))
