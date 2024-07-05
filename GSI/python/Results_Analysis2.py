@@ -214,6 +214,18 @@ Mean score (std) : {round(mean_score,2)} ({round(std_score,2)})""")
         ax.set_xlabel("Number of spectra")
         ax.set_ylabel("Number of peptide")
         plt.show()
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.protein_to_spectra.loc[self.protein_to_spectra["Selected"], ["peptide_id","Spectrum","Score"]].dropna().drop_duplicates()["Score"], bins = 50)
+        ax.set_title("Scores distribution, selected edges")
+        ax.set_xlabel("Score")
+        ax.set_ylabel("Number of spectra")
+        plt.show()
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.protein_to_spectra.loc[self.protein_to_spectra["Selected"] == False, ["peptide_id","Spectrum","Score"]].dropna().drop_duplicates()["Score"], bins = 50)
+        ax.set_title("Scores distribution, non-selected edges")
+        ax.set_xlabel("Score")
+        ax.set_ylabel("Number of spectra")
+        plt.show()
 
     def print_stats_predictions(self):
         df = self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates()
@@ -242,6 +254,27 @@ NPV : {round(NPV, 3)}""")
     def print_results_info(self):
         print(self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates().groupby("prediction_category").count())
         print(self.protein_to_spectra.loc[(self.protein_to_spectra["prediction_category"] == "FP") | (self.protein_to_spectra["prediction_category"] == "TP"), "accession"].drop_duplicates())
+        fig, ax = plt.subplots(1,1)
+        ax.hist(self.sol["abundance"], bins = 50)
+        ax.set_title("Solution abundances")
+        ax.set_xlabel("Abundance")
+        ax.set_ylabel("Number of protein")
+        plt.show()
+    
+    def print_category_stats(self):
+        print("\nNumber of proteins\n", self.protein_to_spectra[["accession","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth"]).count())
+        print("\nNumber of peptides\n", self.protein_to_spectra[["accession","peptide_id","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby(["protein_prediction","protein_truth"]).agg(["mean","std","count"]))
+        print(self.protein_to_spectra[["accession","peptide_id","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby("protein_prediction").agg(["mean","std","count"]))
+        print(self.protein_to_spectra[["accession","peptide_id","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby("protein_truth").agg(["mean","std","count"]))
+        print("\nNumber of spectrum\n", self.protein_to_spectra[["accession","Spectrum","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby(["protein_prediction","protein_truth"]).agg(["mean","std","count"]))
+        print(self.protein_to_spectra[["accession","Spectrum","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby("protein_prediction").agg(["mean","std","count"]))
+        print(self.protein_to_spectra[["accession","Spectrum","protein_prediction","protein_truth"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count().groupby("protein_truth").agg(["mean","std","count"]))
+        sup_pep_per_prot = (self.protein_to_spectra[["accession","protein_prediction","protein_truth","peptide_id","Spectrum"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession","peptide_id"]).count() > 0).groupby(["protein_prediction","protein_truth","accession"]).sum()
+        nb_pep_per_prot = self.protein_to_spectra[["accession","protein_prediction","protein_truth","peptide_id"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count()
+        print("\nProportion of peptides with spectra\n", (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby(["protein_prediction","protein_truth"]).agg(["mean", "std","count"]))
+        (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_prediction").agg(["mean", "std","count"])
+        (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_truth").agg(["mean", "std","count"])
+
     
     def analyse_df(self, notes = "") -> pd.DataFrame:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
