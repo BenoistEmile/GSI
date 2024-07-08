@@ -23,6 +23,12 @@ def prediction_category(row):
         else:
             return "TN"
 
+def select_node_cat(node: dict, predicted : list[bool], truth: list[bool]):
+    return (node["predicted"] in predicted and node["truth"] in truth)
+
+def select_node_accession(node: dict, accession: list[str]):
+    return node["label"] in accession
+
 class Results_Analysis:
 
     def __init__(self, prefix: str, psi1: float, psi2: float, min_detect: float, detect_model: int, ref: pd.DataFrame, threshold: Union[int, None] = None, max_edges: Union[int, None] = None, spectra_error_rate: Union[float, None] = None, false_edges: Union[int, None] = None, synthetic_data: bool = False):
@@ -67,7 +73,24 @@ class Results_Analysis:
         self.protein_to_spectra.drop(["peptide", "spectrum"], inplace = True, axis = 1)
         self.protein_to_spectra["Selected"] = np.where(self.protein_to_spectra["Selected"] == "both", True, False)
     
-    def draw_graph(self, figsize = (150, 10), dpi = 250, with_labels = False):# -> None:
+    def select_nodes(self, G, select_func):
+        for node in G.nodes():
+            if G.nodes[node]["level"] == 1:
+                G.nodes[node]["selected"] = select_func(G.nodes[node])
+            elif G.nodes[node]["level"] == 2:
+                G.nodes[node]["selected"] = False
+                for pred in G.predecessors(node):
+                    if select_func(G.nodes[pred]):
+                        G.nodes[node]["selected"] = True
+                        break
+            else:
+                G.nodes[node]["selected"] = False
+                for pred in G.predecessors(node):
+                    if G.nodes[pred]["selected"]:
+                        G.nodes[node]["selected"] = True
+                        break
+    
+    def draw_graph(self, select_func, figsize = (150, 10), dpi = 250, with_labels = False):# -> None:
         G = nx.DiGraph()
         colors = {"TP": "lime",
                   "TN": "darkred",
@@ -78,7 +101,7 @@ class Results_Analysis:
             peptide_id = int(row["peptide_id"])
             peptide = f"peptide_{peptide_id}"
             if protein not in G.nodes:
-                G.add_node(protein, level = 1, color = colors[row["prediction_category"]], label = protein)
+                G.add_node(protein, level = 1, color = colors[row["prediction_category"]], label = protein, predicted = row["protein_prediction"], truth = row["protein_truth"])
             if peptide not in G.nodes:
                 G.add_node(peptide, level = 2, color = "blue", label = peptide_id)
             G.add_edge(protein, peptide, color = 0)
@@ -89,15 +112,19 @@ class Results_Analysis:
             if spectrum not in G.nodes:
                 G.add_node(spectrum, level = 3, color = "blue", label = spectrum_id)
             G.add_edge(peptide, spectrum, color = row["Score"])
-        # edge_colors = [G[u][v]['color'] for u,v in G.edges()]
-        return G
-        # node_colors = [G[i]["color"] for i in G.nodes()]
-        # node_labels = [G[i]["label"] for i in G.nodes()]
-        # print("graph_created")
-        # plt.subplots(1, 1, figsize = figsize, dpi = dpi)
-        # pos = nx.nx_pydot.graphviz_layout(G, prog = "dot")
-        # nx.draw(G, pos = pos, with_labels = with_labels, node_size = 100, node_color = node_colors, labels = node_labels)
-        # plt.show()
+        print("graph created")
+        self.select_nodes(G, select_func)
+        def filter_node(node):
+            return G.nodes[node]["selected"]
+        view = nx.subgraph_view(G, filter_node = filter_node)
+        print("graph filtered")
+        edge_colors = [view[u][v]['color'] for u,v in view.edges()]
+        node_colors = [view.nodes[i]["color"] for i in view.nodes()]
+        node_labels = [view.nodes[i]["label"] for i in view.nodes()]
+        plt.subplots(1, 1, figsize = figsize, dpi = dpi)
+        pos = nx.nx_agraph.graphviz_layout(view, prog = "dot")
+        nx.draw(view, pos = pos, with_labels = with_labels, node_size = 100, node_color = node_colors, labels = node_labels)
+        plt.show()
 
     def print_stats_proteins(self) -> None:
         N_edges = len(self.upper_edges)
@@ -225,16 +252,16 @@ Mean score (std) : {round(mean_score,2)} ({round(std_score,2)})""")
         FNR = 1 - sensitivity
         PPV = TP / (TP + FP)
         NPV = TN / (TN + FN)
-        print(f"""True positives : {TP}
-True negatives : {TN}
-False positives : {FP}
-False negatives : {FN}
-Accuracy : {round(accuracy, 3)}
-Sensitivity : {round(sensitivity, 3)}
-Specificity : {round(specificity, 3)}
-FNR : {round(FNR, 3)}
-PPV : {round(PPV, 3)}
-NPV : {round(NPV, 3)}""")
+        print(f"True positives : {TP}\n",
+              f"True negatives : {TN}\n",
+              f"False positives : {FP}\n",
+              f"False negatives : {FN}\n",
+              f"Accuracy : {round(accuracy, 3)}\n",
+              f"Sensitivity : {round(sensitivity, 3)}\n",
+              f"Specificity : {round(specificity, 3)}\n",
+              f"FNR : {round(FNR, 3)}\n",
+              f"PPV : {round(PPV, 3)}\n",
+              f"NPV : {round(NPV, 3)}\n",)
     
     def print_results_info(self):
         print(self.protein_to_spectra[["accession","prediction_category"]].drop_duplicates().groupby("prediction_category").count())
@@ -380,7 +407,7 @@ for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1
     # results.print_stats_false_proteins()
     # results.print_stats_predictions()
     # results.print_results_info()
-    results.print_category_stats()
+    # results.print_category_stats()
     print("==============================================================")
 # %%
 fig, axs = plt.subplots(2,1, sharex = True, figsize = (7,10))
