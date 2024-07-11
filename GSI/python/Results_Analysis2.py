@@ -73,7 +73,7 @@ class Results_Analysis:
         self.protein_to_spectra.drop(["peptide", "spectrum"], inplace = True, axis = 1)
         self.protein_to_spectra["Selected"] = np.where(self.protein_to_spectra["Selected"] == "both", True, False)
     
-    def select_nodes(self, G, select_func):
+    def select_nodes(self, G, select_func, add_prot = False):
         for node in G.nodes():
             if G.nodes[node]["level"] == 1:
                 G.nodes[node]["selected"] = select_func(G.nodes[node])
@@ -89,8 +89,15 @@ class Results_Analysis:
                     if G.nodes[pred]["selected"]:
                         G.nodes[node]["selected"] = True
                         break
+        if add_prot:
+            for node in G.nodes():
+                if G.nodes[node]["level"] == 1 and not G.nodes[node]["selected"]:
+                    for succ in G.successors(node):
+                        if G.nodes[succ]["selected"]:
+                            G.nodes[node]["selected"] = True
+                            break
     
-    def draw_graph(self, select_func, figsize = (150, 10), dpi = 250, with_labels = False, label = "label_1", with_edges_labels = False):# -> None:
+    def draw_graph(self, select_func, figsize = (30, 10), dpi = 250, with_labels = True, label = "label_1", with_edges_labels = False, add_prot = False):# -> None:
         G = nx.DiGraph()
         colors = {"TP": "lime",
                   "TN": "darkred",
@@ -118,7 +125,7 @@ class Results_Analysis:
                 G.add_node(spectrum, level = 3, label = spectrum_id, color = "blue", label_1 = spectrum_id, label_2 = spec_peptide_count.loc[spectrum_id, "peptide_id"])
             G.add_edge(peptide, spectrum, color = row["Score"], style = styles[row["Selected"]])
         print("graph created")
-        self.select_nodes(G, select_func)
+        self.select_nodes(G, select_func, add_prot)
         def filter_node(node):
             return G.nodes[node]["selected"]
         view = nx.subgraph_view(G, filter_node = filter_node)
@@ -403,7 +410,7 @@ class Model_Analyses:
         analyses.Load_Analyses(file_name)
         return analyses
 #%%
-prefix = "HeLa_SpecOMS"
+prefix = "HeLa"
 for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 2)]:
     ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep = ";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold = threshold, max_edges = max_edges)
