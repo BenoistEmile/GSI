@@ -73,7 +73,8 @@ class Results_Analysis:
         self.protein_to_spectra.drop(["peptide", "spectrum"], inplace = True, axis = 1)
         self.protein_to_spectra["Selected"] = np.where(self.protein_to_spectra["Selected"] == "both", True, False)
     
-    def select_nodes(self, G, select_func, add_prot = False):
+    def select_nodes(self, G, select_func, add_prot = 0):
+        pass_counter = add_prot
         for node in G.nodes():
             if G.nodes[node]["level"] == 1:
                 G.nodes[node]["selected"] = select_func(G.nodes[node])
@@ -83,21 +84,31 @@ class Results_Analysis:
                     if select_func(G.nodes[pred]):
                         G.nodes[node]["selected"] = True
                         break
-            else:
-                G.nodes[node]["selected"] = False
-                for pred in G.predecessors(node):
-                    if G.nodes[pred]["selected"]:
-                        G.nodes[node]["selected"] = True
-                        break
-        if add_prot:
+        while pass_counter > 0:
             for node in G.nodes():
                 if G.nodes[node]["level"] == 1 and not G.nodes[node]["selected"]:
                     for succ in G.successors(node):
                         if G.nodes[succ]["selected"]:
                             G.nodes[node]["selected"] = True
                             break
+            pass_counter -= 1
+            if pass_counter == 0:
+                break
+            for node in G.nodes():
+                if G.nodes[node]["level"] == 2 and not G.nodes[node]["selected"]:
+                    for pred in G.predecessors(node):
+                        if G.nodes[pred]["selected"]:
+                            G.nodes[node]["selected"] = True
+                            break
+        for node in G.nodes():
+            if G.nodes[node]["level"] == 3:
+                G.nodes[node]["selected"] = False
+                for pred in G.predecessors(node):
+                    if G.nodes[pred]["selected"]:
+                        G.nodes[node]["selected"] = True
+                        break
     
-    def draw_graph(self, select_func, figsize = (30, 10), dpi = 250, with_labels = True, label = "label_1", with_edges_labels = False, add_prot = False):# -> None:
+    def draw_graph(self, select_func, figsize = (30, 10), dpi = 250, with_labels = True, label = "label_1", with_edges_labels = False, add_prot = 0):# -> None:
         G = nx.DiGraph()
         colors = {"TP": "lime",
                   "TN": "darkred",
@@ -300,8 +311,9 @@ Mean score (std) : {round(mean_score,2)} ({round(std_score,2)})""")
         sup_pep_per_prot = (self.protein_to_spectra[["accession","protein_prediction","protein_truth","peptide_id","Spectrum"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession","peptide_id"]).count() > 0).groupby(["protein_prediction","protein_truth","accession"]).sum()
         nb_pep_per_prot = self.protein_to_spectra[["accession","protein_prediction","protein_truth","peptide_id"]].drop_duplicates().groupby(["protein_prediction","protein_truth","accession"]).count()
         print("\nProportion of peptides with spectra\n", (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby(["protein_prediction","protein_truth"]).agg(["mean", "std","count"]))
-        (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_prediction").agg(["mean", "std","count"])
-        (sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_truth").agg(["mean", "std","count"])
+        print((sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_prediction").agg(["mean", "std","count"]))
+        print((sup_pep_per_prot["Spectrum"] / nb_pep_per_prot["peptide_id"]).groupby("protein_truth").agg(["mean", "std","count"]))
+        # nb_prot_per_pep = self.protein_to_spectra[["accession", "peptide_id", "Selected"]].drop_duplicates().groupby(["Selected", "peptide_id"]).count()
     
     def analyse_df(self, notes = "") -> pd.DataFrame:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
