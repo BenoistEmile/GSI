@@ -22,10 +22,10 @@ int Model::Solve(const float psi1, const float psi2) {
 	peptides_spectra.reserve(nb_peptides);
 	std::vector<std::vector<std::size_t>*> spectra_peptides; // même chose pour spectres
 	spectra_peptides.reserve(nb_spectra);
-	std::vector<unsigned int> peptides_sure;
-	peptides_sure.reserve(nb_peptides); // nombre d'arêtes sûres pour chaque peptide utile
-	std::vector<const Score*> useful_scores;
-	useful_scores.reserve(nb_scores); // garde que arêtes utiles
+	std::vector<unsigned int> peptides_sure; // nombre d'arêtes sûres pour chaque peptide utile
+	peptides_sure.reserve(nb_peptides);
+	std::vector<const Score*> useful_scores; // garde que arêtes utiles
+	useful_scores.reserve(nb_scores);
 	std::unordered_map<std::size_t, unsigned int> edge_per_spectrum; // nombre d'arêtes pour  chaque spectre
 
 	for (auto edge : scores) {
@@ -38,7 +38,7 @@ int Model::Solve(const float psi1, const float psi2) {
 	}
 
 	std::unordered_map<std::size_t, std::size_t> peptides_index; // ancien id, nouvel id
-	std::unordered_map<std::size_t, std::size_t> spectra_index; // mm chose
+	std::unordered_map<std::size_t, std::size_t> spectra_index; // ancien id, nouvel id
 
 	for (auto edge : scores) {
 		if (edge_per_spectrum[edge->spectrum] > 1) {
@@ -73,10 +73,23 @@ int Model::Solve(const float psi1, const float psi2) {
 		}
 	}
 
+	std::unordered_map<std::size_t, std::size_t> useless_peptides_index; // ancien id, nouvel id
 	std::unordered_map<std::size_t, std::size_t> proteins_index; // en faire un vecteur ?
 	std::unordered_map<std::size_t, std::size_t> proteins_index_new_old;
 	std::vector<std::size_t> useful_proteins; // identifiants d'origine
 	bool leave;
+	std::vector<std::vector<std::size_t>*> proteins_useful_detectabilities;
+	std::vector<float> useful_detectabilities;
+	std::vector<std::vector<std::tuple<std::size_t, std::size_t>>*> peptides_proteins(peptides_spectra.size()); // new id protein, id detectability
+	for (std::size_t i = 0; i < peptides_spectra.size(); ++i) {
+		peptides_proteins[i] = new std::vector<std::tuple<std::size_t, std::size_t>>;
+	}
+	std::vector<float> useless_detectabilities;
+	std::vector<std::vector<std::size_t>*> proteins_useless_detectabilities;
+	std::vector<std::vector<std::tuple<std::size_t, std::size_t>>*> useless_peptides_proteins;
+	useless_peptides_proteins.reserve(peptides.size() - peptides_spectra.size());
+	// std::size_t counter = 0;
+	// bool founded;
 
 	for (Protein* protein : proteins) {
 		std::size_t i = 0;
@@ -91,41 +104,61 @@ int Model::Solve(const float psi1, const float psi2) {
 			proteins_index[protein->Get_Id()] = useful_proteins.size();
 			proteins_index_new_old[useful_proteins.size()] = protein->Get_Id();
 			useful_proteins.push_back(protein->Get_Id());
-		}
-	}
-
-	std::vector<std::vector<std::tuple<std::size_t, float>>*> peptides_proteins(peptides_spectra.size());
-	for (std::size_t i = 0; i < peptides_spectra.size(); ++i) {
-		peptides_proteins[i] = new std::vector<std::tuple<std::size_t, float>>;
-	}
-	std::vector<std::vector<std::tuple<std::size_t, float>>*> useless_peptides_proteins;
-	useless_peptides_proteins.reserve(peptides.size() - peptides_spectra.size());
-	std::size_t counter = 0;
-	bool founded;
-	for (Peptide* peptide : peptides) {
-		if (peptides_index.contains(peptide->Get_Id())) {
-			for (auto &edges : peptide->Get_Proteins()) {
-				for (float prob : edges.second) {
-					peptides_proteins[peptides_index[peptide->Get_Id()]]->push_back(std::tuple<std::size_t, float>(proteins_index[edges.first], prob));
-				}
-			}
-		}
-		else {
-			founded = false;
-			for (auto& edges : peptide->Get_Proteins()) {
-				if (proteins_index.contains(edges.first)) {
-					for (float prob : edges.second) {
-						if (!founded) {
-							useless_peptides_proteins.push_back(new std::vector<std::tuple<std::size_t, float>>);
-							counter++;
-							founded = true;
+			proteins_useless_detectabilities.push_back(new std::vector<std::size_t>);
+			for (std::size_t peptide_id: protein->Get_Peptides()) {
+				if (peptides_index.contains(peptide_id)) {
+					for (auto& iter_pep: this->Get_Peptide(peptide_id).Get_Proteins()) {
+						if (iter_pep.first == protein->Get_Id()) {
+							for (auto& iter_detect : iter_pep.second) {
+								if (proteins_useful_detectabilities.size() < useful_proteins.size()) {
+									proteins_useful_detectabilities.push_back(new std::vector<std::size_t>{useful_detectabilities.size()});
+								}
+								else {
+									proteins_useful_detectabilities[proteins_index[protein->Get_Id()]]->push_back(useful_detectabilities.size());
+								}
+								peptides_proteins[peptides_index[peptide_id]]->push_back(std::tuple<std::size_t, std::size_t>(proteins_index[protein->Get_Id()], useful_detectabilities.size()));
+								useful_detectabilities.push_back(iter_detect);
+							}
 						}
-						useless_peptides_proteins[counter - 1]->push_back(std::tuple<std::size_t, float>(proteins_index[edges.first], prob));
+					}
+				}
+				else {
+					if (!useless_peptides_index.contains(peptide_id)) {
+						useless_peptides_index[peptide_id] = useless_peptides_proteins.size();
+						useless_peptides_proteins.push_back(new std::vector<std::tuple<std::size_t, std::size_t>>);
+						// counter++;
+					}
+					for (auto& iter_pep: this->Get_Peptide(peptide_id).Get_Proteins()) {
+						if (iter_pep.first == protein->Get_Id()) {
+							for (auto& iter_detect: iter_pep.second) {
+								proteins_useless_detectabilities[proteins_index[protein->Get_Id()]]->push_back(useless_detectabilities.size());
+								useless_peptides_proteins[useless_peptides_index[peptide_id]]->push_back(std::tuple<std::size_t, std::size_t>(proteins_index[protein->Get_Id()], useless_detectabilities.size()));
+								useless_detectabilities.push_back(iter_detect);
+							}
+						}
 					}
 				}
 			}
 		}
 	}
+
+	// for (Peptide* peptide : peptides) {
+	// 	if (!(peptides_index.contains(peptide->Get_Id()))) {
+	// 		founded = false;
+	// 		for (auto& edges : peptide->Get_Proteins()) {
+	// 			if (proteins_index.contains(edges.first)) {
+	// 				for (float prob : edges.second) {
+	// 					if (!founded) {
+	// 						useless_peptides_proteins.push_back(new std::vector<std::tuple<std::size_t, std::size_t>>);
+	// 						counter++;
+	// 						founded = true;
+	// 					}
+	// 					useless_peptides_proteins[counter - 1]->push_back(std::tuple<std::size_t, float>(proteins_index[edges.first], prob));
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	std::size_t n = useful_proteins.size();
 	std::size_t m1 = peptides_proteins.size();
@@ -213,9 +246,10 @@ int Model::Solve(const float psi1, const float psi2) {
 	cplex.getValues(X, valuesX);
 	for (std::size_t h = 0; h < o; ++h) {
 		if (valuesX[h] > 0.5) {
-			solution.Add_Score(scores[h]); // même pb qu'avant (créer une map pour retrouver le bon indice)
+			solution.Add_Score(useful_scores[h]); // même pb qu'avant (créer une map pour retrouver le bon indice)
 		}
 	}
+
 #pragma endregion
 
 	IloNumArray valuesD(env);
