@@ -267,6 +267,12 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (std::size_t h = 0; h < o; ++h) {
 		objective += psi2 * X[h] * useful_scores[h]->score;
 	}
+	for (std::size_t l = 0; l < p; l++) {
+		objective += psi3 * (1 - Y1[l]) * useful_detectabilities[l];
+	}
+	for (std::size_t l = 0; l < p; l++) {
+		objective += psi3 * (1 - Y2[l]) * useless_detectabilities[l];
+	}
 
 	model.add(IloMinimize(env, objective));
 
