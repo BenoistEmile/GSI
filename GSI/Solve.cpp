@@ -39,6 +39,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 
 	std::unordered_map<std::size_t, std::size_t> peptides_index; // ancien id, nouvel id
 	std::unordered_map<std::size_t, std::size_t> spectra_index; // ancien id, nouvel id
+	std::unordered_map<std::size_t, std::size_t> peptides_index_new_old; // nouvel id, ancien id
 
 	for (auto edge : scores) {
 		if (edge_per_spectrum[edge->spectrum] > 1) {
@@ -54,6 +55,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			}
 			else {
 				peptides_index[edge->peptide] = peptides_spectra.size();
+				peptides_index_new_old[peptides_spectra.size()] = edge->peptide;
 				peptides_spectra.push_back(new std::vector<std::size_t>{ useful_scores.size() }); //
 				peptides_sure.push_back(0);
 			}
@@ -66,6 +68,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			}
 			else {
 				peptides_index[edge->peptide] = peptides_spectra.size();
+				peptides_index_new_old[peptides_spectra.size()] = edge->peptide;
 				peptides_spectra.push_back(new std::vector<std::size_t>);
 				peptides_sure.push_back(1);
 				solution.Add_Score(edge);
@@ -299,6 +302,28 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (std::size_t h = 0; h < o; ++h) {
 		if (valuesX[h] > 0.5) {
 			solution.Add_Score(useful_scores[h]); // même pb qu'avant (créer une map pour retrouver le bon indice)
+		}
+	}
+
+	IloNumArray valuesY1(env);
+	cplex.getValues(Y1,valuesY1);
+	IloNumArray valuesY2(env);
+	cplex.getValues(Y2,valuesY2);
+	int prec_prot;
+	std::size_t count;
+	for (std::size_t j = 0; j < m1; j++) {
+		count = 0;
+		prec_prot = -1;
+		for (auto& edge: (*peptides_proteins[j])) {
+			if (std::get<0>(edge) == prec_prot) {
+				count++;
+			}
+			else {
+				prec_prot = std::get<0>(edge);
+			}
+			if (valuesY1[std::get<1>(edge)] == 1) {
+				solution.Add_Selection(proteins_index_new_old[std::get<0>(edge)], peptides_index_new_old[j], count);
+			}
 		}
 	}
 
