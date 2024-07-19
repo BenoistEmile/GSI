@@ -101,7 +101,7 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
         select_output_file.open(select_file_path);
         select_output_file << "protein,peptide,rank" << std::endl;
         for (auto& selection: selections) {
-            select_output_file << std::get<0>(selection) << "," << std::get<1>(selection) << "," << std::get<2>(selection) << "," << std::endl;
+            select_output_file << std::get<0>(selection) << "," << std::get<1>(selection) << "," << std::get<2>(selection) << std::endl;
         }
         select_output_file.close();
         std::cout << "Saved solution to select_" << file_name << std::endl;
