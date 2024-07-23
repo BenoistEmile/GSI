@@ -122,6 +122,7 @@ struct Solution {
 class Model {
 private:
     std::vector<Protein*> proteins;
+    std::unordered_map<std::string, std::size_t> proteins_accession;
     std::vector<Peptide*> peptides;
     std::unordered_map<std::string, std::size_t> peptides_sequences;
     std::vector<Spectrum*> spectra;
@@ -404,6 +405,7 @@ public:
     const std::size_t Number_Of_Spectra() const;
     const std::size_t Number_Of_Scores() const;
     const Protein& Get_Protein(std::size_t protein) const;
+    const Protein& Get_Protein(std::string accession) const;
     const Peptide& Get_Peptide(std::size_t peptide) const;
     const Spectrum& Get_Spectrum(std::size_t spectrum) const;
     const Score& Get_Score(std::size_t score) const;

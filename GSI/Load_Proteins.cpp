@@ -50,6 +50,7 @@ void Model::Load_Proteins_Accession(const std::string file_name, std::ofstream& 
         while (getline(file, line)) {
             if (line[0] == '>') {
                 if (Is_Valid_Sequence(sequence)) {
+                    proteins_accession[accession] = proteins.size();
                     proteins.push_back(new Protein(proteins.size(), sequence, accession));
                 }
                 sequence = "";
@@ -72,6 +73,7 @@ void Model::Load_Proteins_Accession(const std::string file_name, std::ofstream& 
             }
         }
         if (Is_Valid_Sequence(sequence)) {
+            proteins_accession[accession] = proteins.size();
             proteins.push_back(new Protein(proteins.size(), sequence, accession));
         }
         output_file << "Loaded " << proteins.size() << " proteins from file " << file_name << std::endl << std::endl;
@@ -90,6 +92,7 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
         while (getline(file, line)) {
             if (line[0] == '>') {
                 if (Is_Valid_Sequence(sequence)) {
+                    proteins_accession[accession] = proteins.size();
                     proteins.push_back(new Protein(proteins.size(), sequence, accession));
                 }
                 sequence = "";
@@ -113,6 +116,7 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
             }
         }
         if (Is_Valid_Sequence(sequence)) {
+            proteins_accession[accession] = proteins.size();
             proteins.push_back(new Protein(proteins.size(), sequence, accession));
         }
     }

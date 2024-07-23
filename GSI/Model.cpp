@@ -75,6 +75,10 @@ const Protein& Model::Get_Protein(std::size_t protein) const {
     return (*proteins[protein]);
 }
 
+const Protein& Model::Get_Protein(std::string accession) const {
+    return (*proteins[proteins_accession.at(accession)]);
+}
+
 const Peptide& Model::Get_Peptide(std::size_t peptide) const {
     return (*peptides[peptide]);
 }
