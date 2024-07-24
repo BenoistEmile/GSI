@@ -292,7 +292,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	IloNumArray valuesQ(env);
 	cplex.getValues(Q, valuesQ);
 	for (std::size_t i = 0; i < n; ++i) {
-		if (valuesQ[i] > 0) {
+		if (valuesQ[i] >= 0.1) {
 			solution.Add_Protein(proteins_index_new_old[i], (float)valuesQ[i]); // protein_index[i] est inversé : on donne le nouvel indice (solution = créer dès le début une autre map inversée)
 		}
 	}
