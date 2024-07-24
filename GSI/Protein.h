@@ -9,6 +9,7 @@ private:
     const std::size_t id;
     const std::string sequence, accession;
     std::vector<std::size_t> peptides;
+    unsigned int removed_edges;
 public:
     Protein(const std::size_t id, const std::string sequence);
     Protein(const std::size_t id, const std::string sequence, const std::string accession);
@@ -20,6 +21,7 @@ public:
     const std::string& Get_Sequence() const;
     const std::vector<std::size_t>& Get_Peptides() const;
     const std::string& Get_Accession() const;
+    const unsigned int Get_Removed_Edges() const;
 
     bool Is_Digested() const;
 

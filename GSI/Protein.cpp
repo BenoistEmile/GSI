@@ -2,8 +2,8 @@
 
 
 //__________________________________________________________________________________________________________
-Protein::Protein(const std::size_t id, const std::string sequence) : id(id), sequence(sequence), peptides({}) {}
-Protein::Protein(const std::size_t id, const std::string sequence, const std::string accession) : id(id), sequence(sequence), accession(accession), peptides({}) {}
+Protein::Protein(const std::size_t id, const std::string sequence) : id(id), sequence(sequence), peptides({}), removed_edges(0) {}
+Protein::Protein(const std::size_t id, const std::string sequence, const std::string accession) : id(id), sequence(sequence), accession(accession), peptides({}), removed_edges(0) {}
 
 Protein::~Protein() {}
 
@@ -38,6 +38,10 @@ const std::vector<std::size_t>& Protein::Get_Peptides() const {
 
 const std::string& Protein::Get_Accession() const {
     return accession;
+}
+
+const unsigned int Protein::Get_Removed_Edges() const {
+    return removed_edges;
 }
 
 //__________________________________________________________________________________________________________
