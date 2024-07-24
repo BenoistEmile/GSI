@@ -319,6 +319,8 @@ public:
 
     void Load_Scores_XTandem(const std::string file_name);
 
+    void Pre_Solve(const float Pmin = 0.5);
+
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
