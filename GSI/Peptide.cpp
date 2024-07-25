@@ -35,6 +35,10 @@ const std::vector<Pic*>* Peptide::Get_Pics() const {
     return pics;
 }
 
+const bool Peptide::Get_Protein_Activation(std::size_t protein) const {
+    return (std::find(deactivated_proteins.begin(), deactivated_proteins.end(), protein) == deactivated_proteins.end());
+}
+
 //__________________________________________________________________________________________________________
 
 std::ostream& operator<<(std::ostream& os, const Peptide& peptide)
@@ -59,6 +63,10 @@ void Peptide::Add_Protein(const std::size_t protein) {
     else {
         proteins[protein].push_back(1.0f);
     }
+}
+
+void Peptide::Remove_Protein(const std::size_t protein) {
+    deactivated_proteins.push_back(protein);
 }
 
 //_________________________

@@ -109,6 +109,9 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			useful_proteins.push_back(protein->Get_Id());
 			proteins_useless_detectabilities.push_back(new std::vector<std::size_t>);
 			for (std::size_t peptide_id: protein->Get_Peptides()) {
+				if (not protein->Get_Peptide_Activation(peptide_id)) {
+					continue;
+				}
 				if (peptides_index.contains(peptide_id)) {
 					for (auto& iter_pep: this->Get_Peptide(peptide_id).Get_Proteins()) {
 						if (iter_pep.first == protein->Get_Id()) {
@@ -201,8 +204,10 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (std::size_t i = 0; i < n; i++) {
 		std::size_t n_detect = proteins_useful_detectabilities[i]->size() + proteins_useless_detectabilities[i]->size();
 		IloExpr constraintY(env);
+		constraintY += this->Get_Protein(proteins_index_new_old[i]).Get_Removed_Edges() / n_detect;
 		for (std::size_t l: *(proteins_useful_detectabilities[i])) {
 			constraintY += Y1[l] / n_detect;
+			// constraintY += Y1[l];
 			// IloExpr constraintQ1(env);
 			// IloExpr constraintQ1 = Q1[l];
 			// constraintQ1 += Q1[l];
@@ -216,7 +221,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 		}
 		for (std::size_t l: *(proteins_useless_detectabilities[i])) {
 			constraintY += Y2[l] / n_detect;
-			// IloExpr constraintQ2(env);
+			// constraintY += Y2[l];
 			// IloExpr constraintQ2 = Q2[l];
 			// constraintQ2 += Q2[l];
 			model.add(Q2[l] <= (Q[i] * useless_detectabilities[l]) + (M * (1-Y2[l])));
@@ -226,8 +231,11 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			// model.add(IloIfThen(env, Y2[l] == 0, Q2[l] == 0));
 			// model.add(IloIfThen(env, Y2[l] == 1, Q2[l] == Q[i] * useless_detectabilities[l]));
 			// model.add(Q2[l] == Q[i] * useless_detectabilities[l]);
+			// model.add(Y2[l] >= 1 - (M * Q[i]));
+			// model.add(IloIfThen(env, Q[i] == 0, Y2[l] == 1));
 		}
-		model.add(constraintY >= Pmin);
+		// model.add(constraintY >= std::min(Pmin, (float)n_detect));
+		model.add(constraintY <= Pmin);
 	}
 
 

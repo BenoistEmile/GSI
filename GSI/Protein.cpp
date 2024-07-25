@@ -2,8 +2,8 @@
 
 
 //__________________________________________________________________________________________________________
-Protein::Protein(const std::size_t id, const std::string sequence) : id(id), sequence(sequence), peptides({}), removed_edges(0) {}
-Protein::Protein(const std::size_t id, const std::string sequence, const std::string accession) : id(id), sequence(sequence), accession(accession), peptides({}), removed_edges(0) {}
+Protein::Protein(const std::size_t id, const std::string sequence) : id(id), sequence(sequence), peptides({}), deactivated_peptides({}) {}
+Protein::Protein(const std::size_t id, const std::string sequence, const std::string accession) : id(id), sequence(sequence), accession(accession), peptides({}), deactivated_peptides({}) {}
 
 Protein::~Protein() {}
 
@@ -40,8 +40,12 @@ const std::string& Protein::Get_Accession() const {
     return accession;
 }
 
-const unsigned int Protein::Get_Removed_Edges() const {
-    return removed_edges;
+const std::size_t Protein::Get_Removed_Edges() const {
+    return deactivated_peptides.size();
+}
+
+const bool Protein::Get_Peptide_Activation(std::size_t peptide) const {
+    return (std::find(deactivated_peptides.begin(), deactivated_peptides.end(), peptide) == deactivated_peptides.end());
 }
 
 //__________________________________________________________________________________________________________
@@ -54,4 +58,8 @@ bool Protein::Is_Digested() const {
 
 void Protein::Add_Peptide(std::size_t peptide) {
     peptides.push_back(peptide);
+}
+
+void Protein::Remove_Peptide(std::size_t peptide) {
+    deactivated_peptides.push_back(peptide);
 }

@@ -100,6 +100,8 @@ int main() {
 	// model.Load_Scores_XTandem("QX002755_Hela.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
+	model.Pre_Solve(0.5);
+
 	// std::set<std::tuple<float, float>> psi_values = {{1, 1}, {1, 10}, {1, 100}};
 	// model.Test_Psi_Values(psi_values, output_file, "results_yeast+ups1");
 
