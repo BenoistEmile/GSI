@@ -279,14 +279,15 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
     }
 }
 
-void Model::Load_Scores_XTandem(const std::string file_name) {
+void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_value) {
     std::ifstream file(std::filesystem::current_path() / "data" / "scores" / file_name);
     if (file) {
         bool first_line = true;
         std::vector<std::string> row;
-        std::string word, line, sequence;
-        int index_spectrum, index_peptide, index_shared_masses, shared_masses;
+        std::string word, line, sequence, e_value_string;
+        int index_spectrum, index_peptide, index_shared_masses, shared_masses, index_e_value;
         unsigned int scores_sum, count, len_to_remove;
+        float e_value;
         std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*> spectra_scores;
         std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>::const_iterator spectrum_scores;
         std::unordered_map<std::size_t, int>::iterator same_peptide;
@@ -302,6 +303,14 @@ void Model::Load_Scores_XTandem(const std::string file_name) {
                 index_spectrum = std::find(row.begin(), row.end(), "Scan") - row.begin();
                 index_peptide = std::find(row.begin(), row.end(), "Sequence") - row.begin();
                 index_shared_masses = std::find(row.begin(), row.end(), "hyperscore") - row.begin();
+                index_e_value = std::find(row.begin(), row.end(), "E-value") - row.begin();
+                continue;
+            }
+            e_value_string = row[index_e_value];
+            std::replace(e_value_string.begin(), e_value_string.end(), ',', '.');
+            std::istringstream os(e_value_string);
+            os >> e_value;
+            if (e_value > max_e_value && max_e_value != 0) {
                 continue;
             }
             sequence = row[index_peptide];

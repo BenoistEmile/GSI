@@ -317,7 +317,7 @@ public:
 
     void Load_Scores_Prospect(const std::string file_name, const int min_length = 7, const int max_length = 25, const int min_pics = 6);
 
-    void Load_Scores_XTandem(const std::string file_name);
+    void Load_Scores_XTandem(const std::string file_name, const float max_e_value = 0.0);
 
     void Pre_Solve(const float Pmin = 0.5);
 
