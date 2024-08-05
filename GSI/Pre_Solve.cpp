@@ -14,7 +14,7 @@ void Model::Pre_Solve(const float Pmin) {
             continue;
         }
         for (auto& protein: peptide->Get_Proteins()) {
-            if ((this->proteins.at(protein.first)->Get_Removed_Edges() + 1) / this->Get_Protein(protein.first).Get_Peptides().size() <= Pmin) {
+            if (this->proteins.at(protein.first)->Get_Removed_Edges() + 1 <= Pmin * this->Get_Protein(protein.first).Get_Peptides().size()) {
                 this->proteins.at(protein.first)->Remove_Peptide(peptide->Get_Id());
                 peptide->Remove_Protein(protein.first);
             }
