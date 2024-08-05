@@ -77,6 +77,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	}
 
 	std::unordered_map<std::size_t, std::size_t> useless_peptides_index; // ancien id, nouvel id
+	std::unordered_map<std::size_t, std::size_t> useless_peptides_index_new_old;
 	std::unordered_map<std::size_t, std::size_t> proteins_index; // en faire un vecteur ?
 	std::unordered_map<std::size_t, std::size_t> proteins_index_new_old;
 	std::vector<std::size_t> useful_proteins; // identifiants d'origine
@@ -131,6 +132,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 				else {
 					if (!useless_peptides_index.contains(peptide_id)) {
 						useless_peptides_index[peptide_id] = useless_peptides_proteins.size();
+						useless_peptides_index_new_old[useless_peptides_proteins.size()] = peptide_id;
 						useless_peptides_proteins.push_back(new std::vector<std::tuple<std::size_t, std::size_t>>);
 						// counter++;
 					}
@@ -218,6 +220,8 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			// model.add(IloIfThen(env, Y1[l] == 0, Q1[l] == 0));
 			// model.add(IloIfThen(env, Y1[l] == 1, Q1[l] == Q[i] * useful_detectabilities[l]));
 			// model.add(Q1[l] == Q[i] * useful_detectabilities[l]);
+			// model.add(Y1[l] >= 1 - (M * Q[i]));
+			// model.add(IloIfThen(env, Q[i] == 0, Y1[l] == 1));
 		}
 		for (std::size_t l: *(proteins_useless_detectabilities[i])) {
 			constraintY += Y2[l] / n_detect;
@@ -235,7 +239,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			// model.add(IloIfThen(env, Q[i] == 0, Y2[l] == 1));
 		}
 		// model.add(constraintY >= std::min(Pmin, (float)n_detect));
-		model.add(constraintY <= Pmin);
+		model.add(constraintY >= Pmin);
 	}
 
 
@@ -281,7 +285,7 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (std::size_t l = 0; l < p; l++) {
 		objective += psi3 * (1 - Y1[l]) * useful_detectabilities[l];
 	}
-	for (std::size_t l = 0; l < p; l++) {
+	for (std::size_t l = 0; l < q; l++) {
 		objective += psi3 * (1 - Y2[l]) * useless_detectabilities[l];
 	}
 
@@ -334,6 +338,29 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 			}
 		}
 	}
+	for (std::size_t j = 0; j < m2; j++) {
+		count = 0;
+		prec_prot = -1;
+		for (auto& edge: (*useless_peptides_proteins[j])) {
+			if (std::get<0>(edge) == prec_prot) {
+				count++;
+			}
+			else {
+				prec_prot = std::get<0>(edge);
+			}
+			if (valuesY2[std::get<1>(edge)] == 1) {
+				solution.Add_Selection(proteins_index_new_old[std::get<0>(edge)], useless_peptides_index_new_old[j], count);
+			}
+		}
+	}
+
+	// unsigned int count;
+	// for (std::size_t j = 0; j < m1; j++) {
+	// 	count = 0;
+	// 	for (auto& edge: (*peptides_proteins[j])) {
+	// 		if (values)
+	// 	}
+	// }
 
 #pragma endregion
 
@@ -356,6 +383,13 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (auto edges : useless_peptides_proteins) {
 		delete edges;
 	}
+	for (auto edges : proteins_useful_detectabilities) {
+		delete edges;
+	}
+	for (auto edges : proteins_useless_detectabilities) {
+		delete edges;
+	}
+	env.end();
 #pragma endregion
 
 	std::cout << (std::clock() - c_start) / CLOCKS_PER_SEC << " secondes" << std::endl;
