@@ -64,24 +64,20 @@ int main() {
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
 	// model.Load_Scores_SpecOMS("specoms_output_HeLa.csv");
-	// model.Load_Scores_Prospect("110618_yeast_ups_50fmol_r1_peptides.csv", 6, 25, 4);
-	model.Load_Scores_XTandem("Raw_identification_results.csv");
+	model.Load_Scores_XTandem("Raw_identification_results.csv", 0.0001);
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
-	// model.Pre_Solve(0.5);
+	// model.Pre_Solve(0.9);
 
-	// std::set<std::pair<float, float>> params_set = {{1, 1}, {1, 10}, {1, 100}, {1, 1000}, {10, 1}, {100, 1}, {1000, 1}, {0, 1}, {0.2, 0.8}, {0.4, 0.6}, {0.5, 0.5}, {0.6, 0.4}, {0.8, 0.2}, {1, 0}};
-	// std::set<std::pair<float, float>> params_set = {{1, 10}};
-	std::set<std::tuple<float, float, float, float>> params_set = {{1, 10, 1.0, 0.0}};
-	// std::multiset<std::tuple<float, float, float, float>> params_set = {{1, 1, 5.0, 0.0}, {1, 1, 6.0, 0.0}, {1, 1, 7.0, 0.0}, {1, 1, 8.0, 0.0}};
+	std::set<std::pair<float, float>> params_set = {{1, 10}};
 	for (auto& params : params_set) {
 
-		std::cout << std::get<0>(params) << ", " << std::get<1>(params) << ", " << std::get<2>(params) << ", " << std::get<3>(params) << std::endl;
+		std::cout << std::get<0>(params) << ", " << std::get<1>(params) << std::endl;
 
 	// unsigned int count;
 	// for (float i = 0.0; i < 1.001; i += 0.1) {
 		auto start = std::chrono::high_resolution_clock::now();
-		model.Solve(std::get<0>(params), std::get<1>(params), std::get<2>(params), std::get<3>(params));
+		model.Solve(std::get<0>(params), std::get<1>(params));
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration_tot = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		std::cout << duration_tot << std::endl;
@@ -90,13 +86,11 @@ int main() {
 
 		model.Print_Solution();
 
-		std::cout << model.Get_Solution().Get_Selections().size() << std::endl;
-
 	// std::string file_name = "ova_SpecOMS_test_2_2_8_0_1.0_10.0_0.00";
 		// std::string file_name = "OVA_test_2_8_0_" + fmt::format("{0:.1f}", params.first) + "_" + fmt::format("{0:.1f}", params.second) + "_0.00";
-		std::string file_name = "OVA_pep_selection_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_" + fmt::format("{0:.2f}", std::get<2>(params)) + "_" + fmt::format("{0:.2f}", std::get<3>(params));
+		std::string file_name = "HeLa_filter_evalue_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params));
 
-		model.Save_Solution("results_" + file_name, true, true, true, true, true);
+		model.Save_Solution("results_" + file_name, true, true, true, true);
 
 		std::filesystem::path file_path = std::filesystem::current_path() / "models" / ("upper_edges_" + file_name + ".csv");
 		std::ofstream upper_edges_file(file_path);
@@ -124,36 +118,6 @@ int main() {
 		model.Clear(false, false, false, false, true);
 		std::cout << "here" << std::endl;
 	}
-
-	// count = 0;
-	// for (auto iter = model.Get_Solution().Get_abundances().begin(); iter != model.Get_Solution().Get_abundances().end(); iter++) {
-	// 	if (iter->first <= 47) {
-	// 		count++;
-	// 	}
-	// }
-	// output_file << count << "/48 proteins from ups identified." << std::endl << std::endl;
-	// model.Clear(false, false, false, false, true);
-	// }
-
-	// model.Print_Solution(false);
-	
-	// output_file.close();
-
-	// model.Run_Test("yeast_10fmol_nonoise", 1, 10, 13, 4, 0, false);
-
-	// for (int iter = 1; iter <= 5; iter++) {
-	// 	for (auto& iter2 : {0.0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95}) {
-	// 		Model model;
-	// 		std::cout << std::to_string(iter) << std::endl;
-	// 		model.Run_Test_Synthetic_Data("test_synth" + std::to_string(iter), "yeast+ups1.fasta", 1, 0.99, iter2, 1, 1, 10);
-	// 		model.Clear();
-	// 	}
-	// }
-
-	// std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters = {{1, 10, 900, 4, 0.0}, {1, 10, 900, 10, 0.0}};
-	// model.Run_Multiple_Tests(parameters, "yeast_10fmol");
-
-	/**/
 
 	return 0;
 

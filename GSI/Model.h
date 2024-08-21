@@ -22,7 +22,6 @@
 struct Solution {
     std::unordered_map<std::size_t, float> abundances;
     std::vector<const Identification*> identifications; 
-    std::vector<std::tuple<std::size_t, std::size_t, std::size_t>> selections; // ID protéine, ID peptide, rang pour toutes les arêtes protéine-peptide sélectionnées.
 
     ~Solution() {
         for (const Identification* identification : identifications) {
@@ -49,10 +48,6 @@ struct Solution {
         identifications.push_back(score->Get_Edge());
     };
 
-    void Add_Selection(std::size_t protein, std::size_t peptide, std::size_t rank) {
-        selections.push_back(std::tuple<std::size_t, std::size_t, std::size_t>(protein, peptide, rank));
-    }
-
     /*
     * Vide l'enti�ret� de la solution
     */
@@ -62,7 +57,6 @@ struct Solution {
             delete identification;
         }
         identifications.clear();
-        selections.clear();
     };
 
     /*
@@ -83,10 +77,6 @@ struct Solution {
         return abundances;
     }
 
-    const std::vector<std::tuple<std::size_t, std::size_t, std::size_t>>& Get_Selections() const {
-        return selections;
-    }
-
     /*
     * Permet d'afficher la solution.
     * On retrouve en premier la liste des prot�ines s�lectionn�es avec leurs abondances.
@@ -103,7 +93,7 @@ struct Solution {
     * Enregistre la solution dans un fichier csv.
     * Les numéros d'accession des protéines sont utilisés comme identifiants lors de l'enregistrement des protéines identifiées.
     */
-    void Save(std::vector<Spectrum*> spectra, const std::string file_name, const std::vector<Protein*>& proteins, bool overwrite = false, bool save_proteins = true, bool save_ident = true, bool save_selec = true) const;
+    void Save(std::vector<Spectrum*> spectra, const std::string file_name, const std::vector<Protein*>& proteins, bool overwrite = false, bool save_proteins = true, bool save_ident = true) const;
 
     /*
     * Enregistre la solution dans le fichier de log fourni.
@@ -324,7 +314,7 @@ public:
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
-    int Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f, const float Pmin = 0.5, const float psi3 = 1.0);
+    int Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     * Sauvegarde des informations (paramètres, durée d'exécution) dans le fichier fourni.
@@ -344,9 +334,9 @@ public:
     /*
     * Enregistre la solution
     */
-    void Save_Solution(std::string file_name, bool overwrite = false, bool save_proteins = true, bool save_ident = true, bool save_selec = true, bool use_accession = false) const {
+    void Save_Solution(std::string file_name, bool overwrite = false, bool save_proteins = true, bool save_ident = true, bool use_accession = false) const {
         if (use_accession) {
-            solution.Save(spectra, file_name, proteins, overwrite, save_proteins, save_ident, save_selec);
+            solution.Save(spectra, file_name, proteins, overwrite, save_proteins, save_ident);
         }
         else {
             solution.Save(spectra, file_name, overwrite, save_proteins, save_ident);

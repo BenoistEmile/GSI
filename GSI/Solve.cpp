@@ -1,4 +1,3 @@
-
 #include "Model.h"
 
 #include "ilcplex/ilocplex.h"
@@ -7,7 +6,7 @@
 
 //__________________________________________________________________________________________________________
 
-int Model::Solve(const float psi1, const float psi2, const float Pmin, const float psi3) {
+int Model::Solve(const float psi1, const float psi2) {
 
 	std::clock_t c_start = std::clock();
 
@@ -150,31 +149,11 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 		}
 	}
 
-	// for (Peptide* peptide : peptides) {
-	// 	if (!(peptides_index.contains(peptide->Get_Id()))) {
-	// 		founded = false;
-	// 		for (auto& edges : peptide->Get_Proteins()) {
-	// 			if (proteins_index.contains(edges.first)) {
-	// 				for (float prob : edges.second) {
-	// 					if (!founded) {
-	// 						useless_peptides_proteins.push_back(new std::vector<std::tuple<std::size_t, std::size_t>>);
-	// 						counter++;
-	// 						founded = true;
-	// 					}
-	// 					useless_peptides_proteins[counter - 1]->push_back(std::tuple<std::size_t, float>(proteins_index[edges.first], prob));
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	std::size_t n = useful_proteins.size();
 	std::size_t m1 = peptides_proteins.size();
 	std::size_t m2 = useless_peptides_proteins.size();
 	std::size_t l = spectra_peptides.size();
 	std::size_t o = useful_scores.size();
-	std::size_t p = useful_detectabilities.size();
-	std::size_t q = useless_detectabilities.size();
 
 #pragma region variables and model
 
@@ -182,18 +161,12 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	IloModel model(env);
 
 	IloNumVarArray Q = IloNumVarArray(env, n, 0, IloInfinity);
-	IloNumVarArray Q1 = IloNumVarArray(env, p, 0, IloInfinity);
-	IloNumVarArray Q2 = IloNumVarArray(env, q, 0, IloInfinity);
 	IloNumVarArray Delta = IloNumVarArray(env, m1, 0, IloInfinity);
 	IloBoolVarArray X = IloBoolVarArray(env, o);
-	IloBoolVarArray Y1 = IloBoolVarArray(env, p);
-	IloBoolVarArray Y2 = IloBoolVarArray(env, q);
 
 #pragma endregion
 
 #pragma region constraints
-
-	int M = 100000;
 
 	for (std::size_t k = 0; k < l; ++k) {
 		IloExpr constraintX(env);
@@ -203,56 +176,12 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 		model.add(constraintX == 1);
 	}
 
-	for (std::size_t i = 0; i < n; i++) {
-		std::size_t n_detect = proteins_useful_detectabilities[i]->size() + proteins_useless_detectabilities[i]->size();
-		IloExpr constraintY(env);
-		constraintY += this->Get_Protein(proteins_index_new_old[i]).Get_Removed_Edges() / n_detect;
-		for (std::size_t l: *(proteins_useful_detectabilities[i])) {
-			constraintY += Y1[l] / n_detect;
-			// constraintY += Y1[l];
-			// IloExpr constraintQ1(env);
-			// IloExpr constraintQ1 = Q1[l];
-			// constraintQ1 += Q1[l];
-			model.add(Q1[l] <= (Q[i] * useful_detectabilities[l]) + (M * (1-Y1[l])));
-			model.add(Q1[l] >= (Q[i] * useful_detectabilities[l]) - (M * (1-Y1[l])));
-			model.add(Q1[l] <= M * Y1[l]);
-			model.add(Q1[l] >= -(M * Y1[l]));
-			// model.add(IloIfThen(env, Y1[l] == 0, Q1[l] == 0));
-			// model.add(IloIfThen(env, Y1[l] == 1, Q1[l] == Q[i] * useful_detectabilities[l]));
-			// model.add(Q1[l] == Q[i] * useful_detectabilities[l]);
-			// model.add(Y1[l] >= 1 - (M * Q[i]));
-			// model.add(IloIfThen(env, Q[i] == 0, Y1[l] == 1));
-		}
-		for (std::size_t l: *(proteins_useless_detectabilities[i])) {
-			constraintY += Y2[l] / n_detect;
-			// constraintY += Y2[l];
-			// IloExpr constraintQ2 = Q2[l];
-			// constraintQ2 += Q2[l];
-			model.add(Q2[l] <= (Q[i] * useless_detectabilities[l]) + (M * (1-Y2[l])));
-			model.add(Q2[l] >= (Q[i] * useless_detectabilities[l]) - (M * (1-Y2[l])));
-			model.add(Q2[l] <= M * Y2[l]);
-			model.add(Q2[l] >= -(M * Y2[l]));
-			// model.add(IloIfThen(env, Y2[l] == 0, Q2[l] == 0));
-			// model.add(IloIfThen(env, Y2[l] == 1, Q2[l] == Q[i] * useless_detectabilities[l]));
-			// model.add(Q2[l] == Q[i] * useless_detectabilities[l]);
-			// model.add(Y2[l] >= 1 - (M * Q[i]));
-			// model.add(IloIfThen(env, Q[i] == 0, Y2[l] == 1));
-		}
-		// model.add(constraintY >= std::min(Pmin, (float)n_detect));
-		model.add(constraintY >= Pmin);
-	}
-
-
 	for (std::size_t j = 0; j < m1; ++j) {
 		IloExpr constraintDelta1(env);
 		IloExpr constraintDelta2(env);
 		for (std::tuple<std::size_t, std::size_t> edge : (*peptides_proteins[j])) {
-			// constraintDelta1 += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)] * Y1[std::get<1>(edge)];
-			// constraintDelta2 -= Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)] * Y1[std::get<1>(edge)];
-			// constraintDelta1 += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
-			// constraintDelta2 -= Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
-			constraintDelta1 += Q1[std::get<1>(edge)];
-			constraintDelta2 -= Q1[std::get<1>(edge)];
+			constraintDelta1 += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
+			constraintDelta2 -= Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
 		}
 		for (std::size_t h : (*peptides_spectra[j])) {
 			constraintDelta1 -= X[h];
@@ -275,18 +204,11 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	}
 	for (std::size_t j = 0; j < m2; ++j) {
 		for (std::tuple<std::size_t, std::size_t> edge : (*useless_peptides_proteins[j])) {
-			// objective += psi1 * Q[std::get<0>(edge)] * useless_detectabilities[std::get<1>(edge)];// * Y2[std::get<1>(edge)];
-			objective += psi1 * Q2[std::get<1>(edge)];
+			objective += psi1 * Q[std::get<0>(edge)] * useless_detectabilities[std::get<1>(edge)];
 		}
 	}
 	for (std::size_t h = 0; h < o; ++h) {
 		objective += psi2 * X[h] * useful_scores[h]->score;
-	}
-	for (std::size_t l = 0; l < p; l++) {
-		objective += psi3 * (1 - Y1[l]) * useful_detectabilities[l];
-	}
-	for (std::size_t l = 0; l < q; l++) {
-		objective += psi3 * (1 - Y2[l]) * useless_detectabilities[l];
 	}
 
 	model.add(IloMinimize(env, objective));
@@ -314,43 +236,6 @@ int Model::Solve(const float psi1, const float psi2, const float Pmin, const flo
 	for (std::size_t h = 0; h < o; ++h) {
 		if (valuesX[h] > 0.5) {
 			solution.Add_Score(useful_scores[h]); // même pb qu'avant (créer une map pour retrouver le bon indice)
-		}
-	}
-
-	IloNumArray valuesY1(env);
-	cplex.getValues(Y1,valuesY1);
-	IloNumArray valuesY2(env);
-	cplex.getValues(Y2,valuesY2);
-	int prec_prot;
-	std::size_t count;
-	for (std::size_t j = 0; j < m1; j++) {
-		count = 0;
-		prec_prot = -1;
-		for (auto& edge: (*peptides_proteins[j])) {
-			if (std::get<0>(edge) == prec_prot) {
-				count++;
-			}
-			else {
-				prec_prot = std::get<0>(edge);
-			}
-			if (valuesY1[std::get<1>(edge)] == 1) {
-				solution.Add_Selection(proteins_index_new_old[std::get<0>(edge)], peptides_index_new_old[j], count);
-			}
-		}
-	}
-	for (std::size_t j = 0; j < m2; j++) {
-		count = 0;
-		prec_prot = -1;
-		for (auto& edge: (*useless_peptides_proteins[j])) {
-			if (std::get<0>(edge) == prec_prot) {
-				count++;
-			}
-			else {
-				prec_prot = std::get<0>(edge);
-			}
-			if (valuesY2[std::get<1>(edge)] == 1) {
-				solution.Add_Selection(proteins_index_new_old[std::get<0>(edge)], useless_peptides_index_new_old[j], count);
-			}
 		}
 	}
 
