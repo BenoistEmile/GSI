@@ -266,7 +266,7 @@ Mean score (std) : {round(mean_score, 2)} ({round(std_score, 2)})""")
         ax.set_ylabel("Number of spectra")
         plt.show()
         fig, ax = plt.subplots(1, 1)
-        ax.hist(not self.protein_to_spectra.loc[self.protein_to_spectra["Selected"], ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates()["Score"], bins=50)
+        ax.hist(self.protein_to_spectra.loc[self.protein_to_spectra["Selected"] == False, ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates()["Score"], bins=50)
         ax.set_title("Scores distribution, non-selected edges")
         ax.set_xlabel("Score")
         ax.set_ylabel("Number of spectra")
@@ -431,14 +431,14 @@ class Model_Analyses:
 
 
 # %%
-prefix = "HeLa_SpecOMS"
+prefix = "OVA"
 for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1, 0.00, 2)]:
-    ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep=";")
+    ref = pd.read_csv(data_dir / 'ova_ref.csv', sep=";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
     # results.print_stats_proteins()
-    # results.print_stats_scores()
+    results.print_stats_scores()
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
     # results.print_stats_predictions()

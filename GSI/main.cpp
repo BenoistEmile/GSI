@@ -50,8 +50,8 @@ int main() {
 
 	// std::ofstream output_file = model.Open_Output_File("result");
 
-	model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
-	// model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	// model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
+	model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.Peptide_Detectability(2, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
@@ -59,12 +59,12 @@ int main() {
 	std::cout << "Peptide detectability computed" << std::endl;
 	std::cout << "Peptides digested : " << model.Number_Of_Peptides() << std::endl;
 
-	model.Load_Spectra("QX001127_OVA.mgf", 50);
-	// model.Load_Spectra("QX002755_HeLa.mgf", 50);
+	// model.Load_Spectra("QX001127_OVA.mgf", 50);
+	model.Load_Spectra("QX002755_HeLa.mgf", 50);
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
 	// model.Load_Scores_SpecOMS("specoms_output_HeLa.csv");
-	model.Load_Scores_XTandem("Raw_identification_results.csv", 0.0001);
+	model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
 	// model.Pre_Solve(0.9);
