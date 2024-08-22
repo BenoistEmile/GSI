@@ -189,6 +189,41 @@ Number of proteins-spectra paths : {N_path_prot_spectra}""")
         ax.set_ylabel("Number of proteins")
         plt.show()
 
+    def print_stats_sel_edges(self) -> None:
+        sel_edge_prot = self.protein_to_spectra[["accession", "peptide_id", "rank", "selected_edge"]].drop_duplicates()
+        print(f"Number of selected edges : {len(sel_edge_prot.loc[sel_edge_prot["selected_edge"]])}")
+        sel_edge_prot = sel_edge_prot[["accession", "selected_edge"]].groupby("accession").agg(["sum", "count"]).droplevel(0, axis=1)
+        fig, ax = plt.subplots(1, 1)
+        ax.hist(sel_edge_prot["sum"], bins=sel_edge_prot["sum"].max())
+        ax.set_title("Number of selected edges per protein")
+        ax.set_xlabel("Number of selected edges")
+        ax.set_ylabel("Number of proteins")
+        plt.show()
+        fig, ax = plt.subplots(1, 1)
+        ax.hist(sel_edge_prot.loc[sel_edge_prot["sum"] != 0, "sum"], bins=sel_edge_prot["sum"].max())
+        ax.set_title("Number of selected edges per protein")
+        ax.set_xlabel("Number of selected edges")
+        ax.set_ylabel("Number of proteins")
+        plt.show()
+        print("Number of selected edges")
+        sel_edge_prot = self.protein_to_spectra[["accession", "protein_prediction", "protein_truth", "peptide_id", "rank", "selected_edge"]].drop_duplicates()
+        sel_edge_prot = sel_edge_prot[["accession", "protein_prediction", "protein_truth", "selected_edge"]].groupby(["protein_prediction", "protein_truth", "accession"]).agg(["sum", "count"]).droplevel(0, axis=1)
+        prop_sel_edge_prot = sel_edge_prot["sum"] / sel_edge_prot["count"]
+        print(prop_sel_edge_prot.groupby("protein_prediction").agg(["mean", "std", "count"]))
+        print(prop_sel_edge_prot.groupby("protein_truth").agg(["mean", "std", "count"]))
+        fig, ax = plt.subplots(1, 1)
+        ax.hist(prop_sel_edge_prot, bins=20)
+        ax.set_title("Proportion of selected edges per protein")
+        ax.set_xlabel("Proportion of selected edges")
+        ax.set_ylabel("Number of proteins")
+        plt.show()
+        fig, ax = plt.subplots(1, 1)
+        ax.hist(prop_sel_edge_prot.loc[prop_sel_edge_prot != 0], bins=20)
+        ax.set_title("Proportion of selected edges per protein")
+        ax.set_xlabel("Proportion of selected edges")
+        ax.set_ylabel("Number of proteins")
+        plt.show()
+
     def print_stats_true_proteins(self) -> None:
         true_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"]]
         N_proteins = len(true_proteins["protein_id"].drop_duplicates())
@@ -368,8 +403,8 @@ Mean score (std) : {round(mean_score, 2)} ({round(std_score, 2)})""")
 
 
 # %%
-prefix = "OVA_pep_selection"
-for (threshold, max_edges, psi1, psi2, min_detect, psi3, detect_model) in [(8, 0, 1, 10, 0.1, 0.0, 2)]:
+prefix = "OVA_filter_evalue"
+for (threshold, max_edges, psi1, psi2, min_detect, psi3, detect_model) in [(8, 0, 1, 1, 1.0, 0.0, 2)]:
     ref = pd.read_csv(data_dir / 'ova_ref.csv', sep=";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, psi3, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
@@ -381,5 +416,6 @@ for (threshold, max_edges, psi1, psi2, min_detect, psi3, detect_model) in [(8, 0
     # results.print_stats_predictions()
     # results.print_results_info()
     # results.print_category_stats()
+    # results.print_stats_sel_edges()
     print("==============================================================")
 # %%
