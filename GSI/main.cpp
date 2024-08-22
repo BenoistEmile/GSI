@@ -50,8 +50,8 @@ int main() {
 
 	// std::ofstream output_file = model.Open_Output_File("result");
 
-	model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
-	// model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	// model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
+	model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.Peptide_Detectability(2, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
@@ -59,13 +59,12 @@ int main() {
 	std::cout << "Peptide detectability computed" << std::endl;
 	std::cout << "Peptides digested : " << model.Number_Of_Peptides() << std::endl;
 
-	model.Load_Spectra("QX001127_OVA.mgf", 50);
-	// model.Load_Spectra("QX002755_HeLa.mgf", 50);
+	// model.Load_Spectra("QX001127_OVA.mgf", 50);
+	model.Load_Spectra("QX002755_HeLa.mgf", 50);
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
 	// model.Load_Scores_SpecOMS("specoms_output_HeLa.csv");
-	// model.Load_Scores_Prospect("110618_yeast_ups_50fmol_r1_peptides.csv", 6, 25, 4);
-	model.Load_Scores_XTandem("Raw_identification_results.csv");
+	model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
 	// model.Pre_Solve(0.5);
@@ -94,7 +93,7 @@ int main() {
 
 	// std::string file_name = "ova_SpecOMS_test_2_2_8_0_1.0_10.0_0.00";
 		// std::string file_name = "OVA_test_2_8_0_" + fmt::format("{0:.1f}", params.first) + "_" + fmt::format("{0:.1f}", params.second) + "_0.00";
-		std::string file_name = "OVA_pep_selection_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_" + fmt::format("{0:.2f}", std::get<2>(params)) + "_" + fmt::format("{0:.2f}", std::get<3>(params));
+		std::string file_name = "OVA_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params));
 
 		model.Save_Solution("results_" + file_name, true, true, true, true, true);
 
