@@ -176,21 +176,33 @@ int Model::Solve(const float psi1, const float psi2) {
 		model.add(constraintX == 1);
 	}
 
-	for (std::size_t j = 0; j < m1; ++j) {
-		IloExpr constraintDelta1(env);
-		IloExpr constraintDelta2(env);
+	// for (std::size_t j = 0; j < m1; ++j) {
+	// 	IloExpr constraintDelta1(env);
+	// 	IloExpr constraintDelta2(env);
+	// 	for (std::tuple<std::size_t, std::size_t> edge : (*peptides_proteins[j])) {
+	// 		constraintDelta1 += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
+	// 		constraintDelta2 -= Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
+	// 	}
+	// 	for (std::size_t h : (*peptides_spectra[j])) {
+	// 		constraintDelta1 -= X[h];
+	// 		constraintDelta2 += X[h];
+	// 	}
+	// 	constraintDelta1 -= Delta[j] + peptides_sure[j];
+	// 	constraintDelta2 -= Delta[j] - peptides_sure[j];
+	// 	model.add(constraintDelta1 <= 0);
+	// 	model.add(constraintDelta2 <= 0);
+	// }
+
+	for (std::size_t j = 0; j < m1; j++) {
+		IloExpr constraintDelta(env);
 		for (std::tuple<std::size_t, std::size_t> edge : (*peptides_proteins[j])) {
-			constraintDelta1 += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
-			constraintDelta2 -= Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
+			constraintDelta += Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
 		}
 		for (std::size_t h : (*peptides_spectra[j])) {
-			constraintDelta1 -= X[h];
-			constraintDelta2 += X[h];
+			constraintDelta -= X[h];
 		}
-		constraintDelta1 -= Delta[j] + peptides_sure[j];
-		constraintDelta2 -= Delta[j] - peptides_sure[j];
-		model.add(constraintDelta1 <= 0);
-		model.add(constraintDelta2 <= 0);
+		constraintDelta -= peptides_sure[j];
+		model.add(constraintDelta >= 0);
 	}
 
 #pragma endregion
@@ -199,8 +211,17 @@ int Model::Solve(const float psi1, const float psi2) {
 
 	IloExpr objective(env);
 
-	for (std::size_t j = 0; j < m1; ++j) {
-		objective += psi1 * Delta[j];
+	// for (std::size_t j = 0; j < m1; ++j) {
+	// 	objective += psi1 * Delta[j];
+	// }
+	for (std::size_t j = 0; j < m1; j++) {
+		for (std::tuple<std::size_t, std::size_t> edge : (*peptides_proteins[j])) {
+			objective += psi1 * Q[std::get<0>(edge)] * useful_detectabilities[std::get<1>(edge)];
+		}
+		for (std::size_t h : (*peptides_spectra[j])) {
+			objective -= psi1 * X[h];
+		}
+		objective -= psi1 * peptides_sure[j];
 	}
 	for (std::size_t j = 0; j < m2; ++j) {
 		for (std::tuple<std::size_t, std::size_t> edge : (*useless_peptides_proteins[j])) {
@@ -249,8 +270,8 @@ int Model::Solve(const float psi1, const float psi2) {
 
 #pragma endregion
 
-	IloNumArray valuesD(env);
-	cplex.getValues(Delta, valuesD);
+	// IloNumArray valuesD(env);
+	// cplex.getValues(Delta, valuesD);
 
 	env.out() << "Solution status = " << cplex.getStatus() << std::endl;
 	env.out() << "Solution value = " << cplex.getObjValue() << std::endl;
