@@ -215,7 +215,7 @@ Number of proteins with spectra : {N_prot_spectra}""")
         plt.show()
 
     def print_stats_false_proteins(self) -> None:
-        false_proteins = self.protein_to_spectra.loc[not self.protein_to_spectra["protein_truth"]]
+        false_proteins = self.protein_to_spectra.loc[self.protein_to_spectra["protein_truth"] == False]
         N_proteins = len(false_proteins["protein_id"].drop_duplicates())
         N_spectra = len(false_proteins["Spectrum"].dropna().drop_duplicates())
         N_prot_spectra = len(false_proteins.dropna()["protein_id"].drop_duplicates())
@@ -431,9 +431,10 @@ class Model_Analyses:
 
 
 # %%
-prefix = "OVA"
+prefix = "HeLa_no_delta_filter_evalue"
 for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1, 0.00, 2)]:
-    ref = pd.read_csv(data_dir / 'ova_ref.csv', sep=";")
+    # ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep=";")
+    ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")

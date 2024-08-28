@@ -283,7 +283,7 @@ void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_v
     bool proteins_file_exists;
     std::unordered_map<std::string, std::vector<std::string>*> proteins_groups;
     std::ifstream proteins_file (std::filesystem::current_path() / "data" / "scores" / proteins_file_name);
-    if (proteins_file) {
+    if (proteins_file && proteins_file_name != "") {
         proteins_file_exists = true;
         bool first_line = true;
         std::unordered_map<std::string, std::vector<std::string>*>::const_iterator position;
@@ -294,7 +294,7 @@ void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_v
         while (getline(proteins_file, line)) {
             row.clear();
             std::stringstream s(line);
-            while (getline(s, word, ',')) {
+            while (getline(s, word, ';')) {
                 row.push_back(word);
             }
             if (first_line) {
@@ -375,52 +375,56 @@ void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_v
             spectrum_id = std::stoi(row[index_spectrum]);
             shared_masses = std::stoi(row[index_shared_masses]);
             bool found_peptide = false;
-            group_id = row[index_group];
-            for (auto& accession: *(proteins_groups.at(group_id))) {
-                if (proteins_accession.contains(accession)) {
-                    for (std::size_t peptide_id : this->Get_Protein(accession).Get_Peptides()) {
-                        if (Same_Peptide(this->Get_Peptide(peptide_id).Get_Sequence(), sequence, 0, 50, 3)) {
-                            found_peptide = true;
-                            spectrum_scores = spectra_scores.find(spectrum_id);
-                            if (spectrum_scores == spectra_scores.end()) {
-                                spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, int>;
-                                spectra_scores.at(spectrum_id)->emplace(this->Get_Peptide(peptide_id).Get_Id(), shared_masses);
-                            }
-                            else {
-                                same_peptide = spectrum_scores->second->find(this->Get_Peptide(peptide_id).Get_Id());
-                                if (same_peptide == spectrum_scores->second->end()) {
-                                    spectrum_scores->second->emplace(this->Get_Peptide(peptide_id).Get_Id(), shared_masses);
+            if (proteins_file_exists) {
+                group_id = row[index_group];
+                for (auto& accession: *(proteins_groups.at(group_id))) {
+                    if (proteins_accession.contains(accession)) {
+                        for (std::size_t peptide_id : this->Get_Protein(accession).Get_Peptides()) {
+                            if (Same_Peptide(this->Get_Peptide(peptide_id).Get_Sequence(), sequence, 0, 50, 3)) {
+                                found_peptide = true;
+                                spectrum_scores = spectra_scores.find(spectrum_id);
+                                if (spectrum_scores == spectra_scores.end()) {
+                                    spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, int>;
+                                    spectra_scores.at(spectrum_id)->emplace(this->Get_Peptide(peptide_id).Get_Id(), shared_masses);
                                 }
-                                else if (shared_masses > same_peptide->second) {
-                                    same_peptide->second = shared_masses;
+                                else {
+                                    same_peptide = spectrum_scores->second->find(this->Get_Peptide(peptide_id).Get_Id());
+                                    if (same_peptide == spectrum_scores->second->end()) {
+                                        spectrum_scores->second->emplace(this->Get_Peptide(peptide_id).Get_Id(), shared_masses);
+                                    }
+                                    else if (shared_masses > same_peptide->second) {
+                                        same_peptide->second = shared_masses;
+                                    }
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
             }
-            // for (auto& iter : peptides) {
-            //     // if (iter->Get_Sequence() == sequence) {
-            //     if (Same_Peptide(iter->Get_Sequence(), sequence, 0, 50, 3)) {
-            //         found_peptide = true;
-            //         spectrum_scores = spectra_scores.find(spectrum_id);
-            //         if (spectrum_scores == spectra_scores.end()) {
-            //             spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, int>;
-            //             spectra_scores.at(spectrum_id)->emplace(iter->Get_Id(), shared_masses);
-            //         }
-            //         else {
-            //             same_peptide = spectrum_scores->second->find(iter->Get_Id());
-            //             if (same_peptide == spectrum_scores->second->end()) {
-            //                 spectrum_scores->second->emplace(iter->Get_Id(), shared_masses);
-            //             }
-            //             else if (shared_masses > same_peptide->second) {
-            //                 same_peptide->second = shared_masses;
-            //             }
-            //         }
-            //         break;
-            //     }
-            // }
+            else {
+                for (auto& iter : peptides) {
+                    // if (iter->Get_Sequence() == sequence) {
+                    if (Same_Peptide(iter->Get_Sequence(), sequence, 0, 50, 3)) {
+                        found_peptide = true;
+                        spectrum_scores = spectra_scores.find(spectrum_id);
+                        if (spectrum_scores == spectra_scores.end()) {
+                            spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, int>;
+                            spectra_scores.at(spectrum_id)->emplace(iter->Get_Id(), shared_masses);
+                        }
+                        else {
+                            same_peptide = spectrum_scores->second->find(iter->Get_Id());
+                            if (same_peptide == spectrum_scores->second->end()) {
+                                spectrum_scores->second->emplace(iter->Get_Id(), shared_masses);
+                            }
+                            else if (shared_masses > same_peptide->second) {
+                                same_peptide->second = shared_masses;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
             if (not found_peptide) {
                 std::cout << spectrum_id << ", " << sequence << std::endl;
             }

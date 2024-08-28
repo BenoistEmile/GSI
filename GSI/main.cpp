@@ -51,7 +51,8 @@ int main() {
 	// std::ofstream output_file = model.Open_Output_File("result");
 
 	// model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
-	model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	// model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	model.Load_Proteins_Accession("Sprot_Tax9606_human_2023_03_22.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.Peptide_Detectability(2, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
@@ -64,14 +65,15 @@ int main() {
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
 	// model.Load_Scores_SpecOMS("specoms_output_HeLa.csv");
-	model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
+	// model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0001, "QX002755_Hela-WithAccess-b_proteins.csv");
+	model.Load_Scores_XTandem("QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05.csv", 0.0, "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
 	// model.Pre_Solve(0.5);
 
 	// std::set<std::pair<float, float>> params_set = {{1, 1}, {1, 10}, {1, 100}, {1, 1000}, {10, 1}, {100, 1}, {1000, 1}, {0, 1}, {0.2, 0.8}, {0.4, 0.6}, {0.5, 0.5}, {0.6, 0.4}, {0.8, 0.2}, {1, 0}};
 	// std::set<std::pair<float, float>> params_set = {{1, 10}};
-	std::set<std::tuple<float, float, float, float>> params_set = {{1, 10, 1.0, 0.0}};
+	std::set<std::tuple<float, float, float, float>> params_set = {{1, 1, 1.0, 0.0}};
 	// std::multiset<std::tuple<float, float, float, float>> params_set = {{1, 1, 5.0, 0.0}, {1, 1, 6.0, 0.0}, {1, 1, 7.0, 0.0}, {1, 1, 8.0, 0.0}};
 	for (auto& params : params_set) {
 
@@ -93,7 +95,7 @@ int main() {
 
 	// std::string file_name = "ova_SpecOMS_test_2_2_8_0_1.0_10.0_0.00";
 		// std::string file_name = "OVA_test_2_8_0_" + fmt::format("{0:.1f}", params.first) + "_" + fmt::format("{0:.1f}", params.second) + "_0.00";
-		std::string file_name = "OVA_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params));
+		std::string file_name = "HeLa_human_old_model_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_0.00";
 
 		model.Save_Solution("results_" + file_name, true, true, true, true, true);
 
@@ -123,36 +125,6 @@ int main() {
 		model.Clear(false, false, false, false, true);
 		std::cout << "here" << std::endl;
 	}
-
-	// count = 0;
-	// for (auto iter = model.Get_Solution().Get_abundances().begin(); iter != model.Get_Solution().Get_abundances().end(); iter++) {
-	// 	if (iter->first <= 47) {
-	// 		count++;
-	// 	}
-	// }
-	// output_file << count << "/48 proteins from ups identified." << std::endl << std::endl;
-	// model.Clear(false, false, false, false, true);
-	// }
-
-	// model.Print_Solution(false);
-	
-	// output_file.close();
-
-	// model.Run_Test("yeast_10fmol_nonoise", 1, 10, 13, 4, 0, false);
-
-	// for (int iter = 1; iter <= 5; iter++) {
-	// 	for (auto& iter2 : {0.0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95}) {
-	// 		Model model;
-	// 		std::cout << std::to_string(iter) << std::endl;
-	// 		model.Run_Test_Synthetic_Data("test_synth" + std::to_string(iter), "yeast+ups1.fasta", 1, 0.99, iter2, 1, 1, 10);
-	// 		model.Clear();
-	// 	}
-	// }
-
-	// std::set<std::tuple<float, float, unsigned int, unsigned int, float>> parameters = {{1, 10, 900, 4, 0.0}, {1, 10, 900, 10, 0.0}};
-	// model.Run_Multiple_Tests(parameters, "yeast_10fmol");
-
-	/**/
 
 	return 0;
 
