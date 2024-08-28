@@ -294,7 +294,7 @@ void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_v
         while (getline(proteins_file, line)) {
             row.clear();
             std::stringstream s(line);
-            while (getline(s, word, ',')) {
+            while (getline(s, word, ';')) {
                 row.push_back(word);
             }
             if (first_line) {
