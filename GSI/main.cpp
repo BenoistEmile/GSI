@@ -51,8 +51,8 @@ int main() {
 	// std::ofstream output_file = model.Open_Output_File("result");
 
 	// model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
-	// model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
-	model.Load_Proteins_Accession("Sprot_Tax9606_human_2023_03_22.fasta");
+	model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	// model.Load_Proteins_Accession("Sprot_Tax9606_human_2023_03_22.fasta");
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
 	model.Peptide_Detectability(2, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
@@ -95,7 +95,7 @@ int main() {
 
 	// std::string file_name = "ova_SpecOMS_test_2_2_8_0_1.0_10.0_0.00";
 		// std::string file_name = "OVA_test_2_8_0_" + fmt::format("{0:.1f}", params.first) + "_" + fmt::format("{0:.1f}", params.second) + "_0.00";
-		std::string file_name = "HeLa_human_old_model_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_0.00";
+		std::string file_name = "HeLa_full_old_model_filter_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_0.00";
 
 		model.Save_Solution("results_" + file_name, true, true, true, true, true);
 
