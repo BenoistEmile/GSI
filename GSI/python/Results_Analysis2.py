@@ -558,3 +558,11 @@ for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"] == False
     if peptide_spectra[row["Spectrum"]] < row["Score"]:
         count += 1
 # %%
+ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-WithAccess-b_proteins.csv", sep=";")[["accession", "PAI", "emPAI"]]
+for index, row in ref.iterrows():
+    ref.loc[index, "accession"] = row["accession"].split("|")[1]
+results = pd.read_csv(sol_dir / "results_HeLa_human_optimist_filter_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance"]]
+ref_results = pd.merge(ref, results, on="accession")
+print(f"{len(ref_results)}/{len(results)}")
+ref_results.drop("accession", axis=1).corr()
+# %%
