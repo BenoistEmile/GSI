@@ -432,14 +432,16 @@ class Model_Analyses:
 
 # %%
 prefix = "HeLa_no_delta_filter_evalue"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1, 0.00, 2)]:
-    # ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep=";")
-    ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 1)]:
+    ref = pd.read_csv(data_dir / 'hela_ref.csv', sep=";")
+    # ref = pd.read_csv(data_dir / "QX002755_Hela-WithAccess-b_proteins.csv", sep=",")
+    # for index, row in ref.iterrows():
+    #     ref.loc[index, "Accession"] = row["Accession"].split("|")[1]
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
-    # results.print_stats_proteins()
-    results.print_stats_scores()
+    results.print_stats_proteins()
+    # results.print_stats_scores()
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
     # results.print_stats_predictions()
@@ -558,11 +560,20 @@ for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"] == False
     if peptide_spectra[row["Spectrum"]] < row["Score"]:
         count += 1
 # %%
+pep_number = results.protein_to_spectra[["accession","peptide_id"]].drop_duplicates().groupby("accession").count()
+prot_detect = results.protein_to_spectra[["accession","peptide_id","Prob"]].drop_duplicates().groupby("accession").sum().drop("peptide_id", axis=1)
 ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-WithAccess-b_proteins.csv", sep=";")[["accession", "PAI", "emPAI"]]
 for index, row in ref.iterrows():
     ref.loc[index, "accession"] = row["accession"].split("|")[1]
 results = pd.read_csv(sol_dir / "results_HeLa_human_optimist_filter_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance"]]
 ref_results = pd.merge(ref, results, on="accession")
+ref_results = pd.merge(ref_results, pep_number, left_on="accession", right_index=True)
+ref_results = pd.merge(ref_results, prot_detect, left_on="accession", right_index=True)
+ref_results["abundance_2"] = ref_results["abundance"] / ref_results["peptide_id"]
+ref_results["abundance_3"] = ref_results["abundance"] / ref_results["Prob"]
+ref_results["emabundance"] = 10**ref_results["abundance"] - 1
+ref_results["emabundance_2"] = 10**ref_results["abundance_2"] - 1
+ref_results["emabundance_3"] = 10**ref_results["abundance_3"] - 1
 print(f"{len(ref_results)}/{len(results)}")
-ref_results.drop("accession", axis=1).corr()
+ref_results.drop(["accession", "peptide_id", "Prob"], axis=1).corr("kendall")
 # %%
