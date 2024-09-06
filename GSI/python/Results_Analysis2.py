@@ -437,6 +437,7 @@ for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1
     # ref = pd.read_csv(data_dir / "QX002755_Hela-WithAccess-b_proteins.csv", sep=",")
     # for index, row in ref.iterrows():
     #     ref.loc[index, "Accession"] = row["Accession"].split("|")[1]
+    # ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
@@ -577,3 +578,18 @@ ref_results["emabundance_3"] = 10**ref_results["abundance_3"] - 1
 print(f"{len(ref_results)}/{len(results)}")
 ref_results.drop(["accession", "peptide_id", "Prob"], axis=1).corr("kendall")
 # %%
+ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv", sep=";")[["accession"]]
+for index, row in ref.iterrows():
+    ref.loc[index, "is_human"] = (row["accession"][-5:] == "HUMAN")
+    ref.loc[index, "accession"] = row["accession"].split("|")[1]
+results = pd.read_csv(sol_dir / "results_HeLa_full_optimist_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession"]]
+ref_results = pd.merge(ref, results, on="accession")
+ref_results
+# %%
+accession, human = [], []
+fasta = open(data_dir / "proteins" / "Sprot_2024-02-05.fasta")
+for line in fasta.readlines():
+    if line[0] == ">":
+        accession.append(line.split()[0].split("|")[1])
+        human.append(line.split()[0][-5:] == "HUMAN")
+fasta.close()
