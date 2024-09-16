@@ -53,6 +53,64 @@ void Model::Clear(bool clear_proteins, bool clear_peptides, bool clear_spectra, 
     }
 }
 
+void Model::Correct_Abundances() {
+    std::unordered_map<std::size_t, unsigned int> expected_abundances;
+    float total_detect;
+    float protein_detect;
+    for (auto& identification: solution.identifications) {
+        auto pos = expected_abundances.find(identification->peptide);
+        if (pos == expected_abundances.end()) {
+            expected_abundances[identification->peptide] = 1;
+        }
+        else {
+            expected_abundances[identification->peptide]++;
+        }
+    }
+    for (auto& expected_abundance: expected_abundances) {
+        total_detect = 0;
+        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) {
+            if (solution.abundances.find(protein.first) == solution.abundances.end()) {
+                continue;
+            }
+            for (auto& iter: protein.second) {
+                total_detect += iter;
+            }
+        }
+        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) {
+            if (solution.abundances.find(protein.first) == solution.abundances.end()) {
+                continue;
+            }
+            protein_detect = 0;
+            for (auto& iter: protein.second) {
+                protein_detect += iter;
+            }
+            auto pos = solution.corr_abundances.find(protein.first);
+            if (pos == solution.corr_abundances.end()) {
+                solution.corr_abundances[protein.first] = std::tuple<float, float, float>(expected_abundance.second * protein_detect / total_detect, 0, 0);
+            }
+            else {
+                std::get<0>(solution.corr_abundances[protein.first]) += expected_abundance.second * protein_detect / total_detect;
+            }
+        }
+    }
+    for (auto& corr_abundance: solution.corr_abundances) {
+        total_detect = 0;
+        std::get<1>(corr_abundance.second) = std::get<0>(corr_abundance.second);
+        std::get<2>(corr_abundance.second) = std::get<0>(corr_abundance.second);
+        std::get<1>(corr_abundance.second) /= this->Get_Protein(corr_abundance.first).Get_Peptides().size();
+        for (std::size_t pep_id: this->Get_Protein(corr_abundance.first).Get_Peptides()) {
+            for (auto& protein: this->Get_Peptide(pep_id).Get_Proteins()) {
+                if (corr_abundance.first == protein.first) {
+                    for (auto& detect: protein.second) {
+                        total_detect += detect;
+                    }
+                }
+            }
+        }
+        std::get<2>(corr_abundance.second) /= total_detect;
+    }
+}
+
 //__________________________________________________________________________________________________________
 
 const std::size_t Model::Number_Of_Proteins() const {

@@ -22,6 +22,7 @@
 struct Solution {
     std::unordered_map<std::size_t, float> abundances;
     std::vector<const Identification*> identifications; 
+    std::unordered_map<std::size_t, std::tuple<float, float, float>> corr_abundances;
 
     ~Solution() {
         for (const Identification* identification : identifications) {
@@ -53,6 +54,7 @@ struct Solution {
     */
     void Clear() {
         abundances.clear();
+        corr_abundances.clear();
         for (const Identification* identification : identifications) {
             delete identification;
         }
@@ -321,14 +323,16 @@ public:
     */
     int Solve(std::ofstream& output_file, float psi1 = 0.5f ,const float psi2 = 0.5f);
 
+    void Correct_Abundances();
+
     /*
     * Affiche la solution courante.
     */
     void Print_Solution(bool ident = false) const {
         solution.Print(peptides ,spectra, ident);
-        for (auto& couple : solution.abundances) {
-            std::cout << couple.first << " : " << this->Get_Protein(couple.first).Get_Accession() << std::endl;
-        }
+        // for (auto& couple : solution.abundances) {
+        //     std::cout << couple.first << " : " << this->Get_Protein(couple.first).Get_Accession() << std::endl;
+        // }
     };
 
     /*

@@ -5,7 +5,11 @@
 void Solution::Print(const std::vector<Peptide*> peptides , std::vector<Spectrum*> spectra, bool ident) const {
     std::cout << "\nSelected proteins :" << std::endl;
     for (auto& couple : abundances) {
-        std::cout << "   - " << couple.first << " : " << couple.second << std::endl;
+        std::cout << "   - " << couple.first << " : " << couple.second;
+        if (!this->corr_abundances.empty()) {
+            std::cout << ", " << std::get<0>(corr_abundances.at(couple.first)) << ", " << std::get<1>(corr_abundances.at(couple.first)) << ", " << std::get<2>(corr_abundances.at(couple.first));
+        }
+        std::cout << std::endl;
     }
     if (ident) {
         for (const Identification* identification : identifications) {
@@ -73,9 +77,17 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
     ident_file_path += file_name + ".csv";
     if ((!fileExists(prot_file_path) || overwrite) && save_proteins) {
         prot_output_file.open(prot_file_path);
-        prot_output_file << "id,accession,abundance" << std::endl;
+        prot_output_file << "id,accession,abundance";
+        if (!this->corr_abundances.empty()) {
+            prot_output_file << ",corrected abundance,corrected abundance peptide,corrected abundance detectability";
+        }
+        prot_output_file << std::endl;
         for (auto& couple : abundances) {
-            prot_output_file << couple.first << "," << proteins.at(couple.first)->Get_Accession() << "," << couple.second << std::endl;
+            prot_output_file << couple.first << "," << proteins.at(couple.first)->Get_Accession() << "," << couple.second;
+            if (!this->corr_abundances.empty()) {
+                prot_output_file << "," << std::get<0>(corr_abundances.at(couple.first)) << "," << std::get<1>(corr_abundances.at(couple.first)) << "," << std::get<2>(corr_abundances.at(couple.first));
+            }
+            prot_output_file << std::endl;
         }
         prot_output_file.close();
         std::cout << "Saved solution to " << file_name << std::endl;
