@@ -231,6 +231,9 @@ int Model::Solve(const float psi1, const float psi2) {
 	for (std::size_t h = 0; h < o; ++h) {
 		objective += psi2 * X[h] * useful_scores[h]->score;
 	}
+	for (std::size_t i = 0; i < n; i++) {
+		objective += Q[i];
+	}
 
 	model.add(IloMinimize(env, objective));
 
