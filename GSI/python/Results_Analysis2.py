@@ -431,17 +431,14 @@ class Model_Analyses:
 
 
 # %%
-prefix = "HeLa_no_delta_filter_evalue"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 10, 0.00, 1)]:
-    ref = pd.read_csv(data_dir / 'hela_ref.csv', sep=";")
-    # ref = pd.read_csv(data_dir / "QX002755_Hela-WithAccess-b_proteins.csv", sep=",")
-    # for index, row in ref.iterrows():
-    #     ref.loc[index, "Accession"] = row["Accession"].split("|")[1]
-    # ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
+prefix = "HeLa_human_optimist"
+for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1, 0.00, 2)]:
+    # ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep=";")
+    ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
     results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
 
     print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
-    results.print_stats_proteins()
+    # results.print_stats_proteins()
     # results.print_stats_scores()
     # results.print_stats_true_proteins()
     # results.print_stats_false_proteins()
@@ -561,24 +558,30 @@ for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"] == False
     if peptide_spectra[row["Spectrum"]] < row["Score"]:
         count += 1
 # %%
-pep_number = results.protein_to_spectra[["accession","peptide_id"]].drop_duplicates().groupby("accession").count()
-prot_detect = results.protein_to_spectra[["accession","peptide_id","Prob"]].drop_duplicates().groupby("accession").sum().drop("peptide_id", axis=1)
-ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-WithAccess-b_proteins.csv", sep=";")[["accession", "PAI", "emPAI"]]
+pep_by_prot = results.protein_to_spectra[["accession", "peptide_id", "Prob"]].groupby("accession").count()["Prob"]
+prob_by_prot = results.protein_to_spectra[["accession", "peptide_id", "Prob"]].groupby("accession").sum()["Prob"]
+# %%
+# ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-WithAccess-b_proteins.csv", sep=";")[["accession", "PAI", "emPAI"]]
+ref_prot = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_peptides.csv", sep=";")[["Protein ID", "accession"]].drop_duplicates()
+ref_pai = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins_2.csv", sep=";")[["Protein ID", "PAI", "emPAI"]]
+ref = pd.merge(ref_prot, ref_pai, on="Protein ID").drop("Protein ID", axis=1)
 for index, row in ref.iterrows():
     ref.loc[index, "accession"] = row["accession"].split("|")[1]
-results = pd.read_csv(sol_dir / "results_HeLa_human_optimist_filter_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance"]]
+# results = pd.read_csv(sol_dir / "results_HeLa_human_optimist_obj2_corr_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance", "corrected abundance"]]
+results = pd.read_csv(sol_dir / "results_HeLa_full_optimist_obj2_corr_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance", "corrected abundance", "corrected abundance peptide", "corrected abundance detectability"]]
+# results = pd.merge(results, pep_by_prot, left_on="accession", right_index=True)
+# results = pd.merge(results, prob_by_prot, left_on="accession", right_index=True)
+results["em corrected abundance"] = 10**results["corrected abundance"] - 1
+results["em abundance"] = 10**results["abundance"] - 1
+results["em corrected abundance peptide"] = 10**results["corrected abundance peptide"] - 1
+results["em corrected abundance detectability"] = 10**results["corrected abundance detectability"] - 1
 ref_results = pd.merge(ref, results, on="accession")
-ref_results = pd.merge(ref_results, pep_number, left_on="accession", right_index=True)
-ref_results = pd.merge(ref_results, prot_detect, left_on="accession", right_index=True)
-ref_results["abundance_2"] = ref_results["abundance"] / ref_results["peptide_id"]
-ref_results["abundance_3"] = ref_results["abundance"] / ref_results["Prob"]
-ref_results["emabundance"] = 10**ref_results["abundance"] - 1
-ref_results["emabundance_2"] = 10**ref_results["abundance_2"] - 1
-ref_results["emabundance_3"] = 10**ref_results["abundance_3"] - 1
 print(f"{len(ref_results)}/{len(results)}")
-ref_results.drop(["accession", "peptide_id", "Prob"], axis=1).corr("kendall")
+# ref_results.drop(["accession", "Prob_x", "Prob_y"], axis=1).corr("spearman")
+ref_results.drop("accession", axis=1).corr("spearman")
 # %%
-ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv", sep=";")[["accession"]]
+# ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv", sep=";")[["accession"]]
+ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_peptides.csv", sep=";")[["accession"]].drop_duplicates()
 for index, row in ref.iterrows():
     ref.loc[index, "is_human"] = (row["accession"][-5:] == "HUMAN")
     ref.loc[index, "accession"] = row["accession"].split("|")[1]
@@ -593,3 +596,46 @@ for line in fasta.readlines():
         accession.append(line.split()[0].split("|")[1])
         human.append(line.split()[0][-5:] == "HUMAN")
 fasta.close()
+ref2 = pd.DataFrame.from_dict({"accession": accession, "is_human": human})
+ref2_results = pd.merge(ref2, results, on="accession")
+ref2_results
+# %%
+fig = plt.figure(figsize=(15, 15))
+ax1 = plt.subplot(221)
+ax1.set_xlabel("PAI")
+ax1.set_ylabel("GSI")
+ax2 = plt.subplot(222, sharey=ax1)
+ax2.set_xlabel("emPAI")
+ax2.set_ylabel("GSI")
+ax2.set_xscale("log")
+ax3 = plt.subplot(223, sharex=ax1)
+ax3.set_xlabel("PAI")
+ax3.set_ylabel("emGSI")
+ax3.set_yscale("log")
+ax4 = plt.subplot(224, sharex=ax2, sharey=ax3)
+ax4.set_xlabel("emPAI")
+ax4.set_ylabel("emGSI")
+
+# ax1.scatter("PAI", "abundance", data=ref_results, c="tab:red", label="Abundance", marker="+", s=15)
+# ax1.scatter("PAI", "corrected abundance", data=ref_results, c="tab:green", label="corrected abundance", marker="+", s=15)
+ax1.scatter("PAI", "corrected abundance peptide", data=ref_results, c="tab:blue", label="corrected abundance peptide", marker="+", s=15)
+ax1.scatter("PAI", "corrected abundance detectability", data=ref_results, c="tab:orange", label="corrected abundance detect", marker="+", s=15)
+ax1.legend()
+
+# ax2.scatter("emPAI", "abundance", data=ref_results, c="tab:red", marker="+", s=15)
+# ax2.scatter("emPAI", "corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
+ax2.scatter("emPAI", "corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
+ax2.scatter("emPAI", "corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
+
+# ax3.scatter("PAI", "em abundance", data=ref_results, c="tab:red", marker="+", s=15)
+# ax3.scatter("PAI", "em corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
+ax3.scatter("PAI", "em corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
+ax3.scatter("PAI", "em corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
+
+# ax4.scatter("emPAI", "em abundance", data=ref_results, c="tab:red", marker="+", s=15)
+# ax4.scatter("emPAI", "em corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
+ax4.scatter("emPAI", "em corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
+ax4.scatter("emPAI", "em corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
+plt.show()
+
+# %%
