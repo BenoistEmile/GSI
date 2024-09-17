@@ -430,4 +430,6 @@ public:
    * - Scores Peptides - Spectres (Load_Spectra + Compute_Score_SpecOMS)
    */
    void Run_Tests_Real_Data(unsigned int n_tests, std::string file_name);
+
+   void Load_test();
 };

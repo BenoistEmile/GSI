@@ -148,3 +148,40 @@ const Spectrum& Model::Get_Spectrum(std::size_t spectrum) const {
 const Score& Model::Get_Score(std::size_t score) const {
     return (*scores[score]);
 }
+
+void Model::Load_test() {
+    proteins.push_back(new Protein(0, "AAAAAAAAAAAAAAAAAAAAA", "P1"));
+    proteins.push_back(new Protein(1, "AAAAAAAAAAAAAAAAAAAAA", "P2"));
+    proteins.push_back(new Protein(2, "AAAAAAAAAAAAAAAAAAAAA", "P3"));
+    proteins.push_back(new Protein(3, "AAAAAAAAAAAAAAAAAAAAA", "P4"));
+    peptides.push_back(new Peptide(0, "BBBBBBBBBBBB"));
+    peptides.back()->Add_Protein(0);
+    proteins[0]->Add_Peptide(0);
+    peptides.back()->Add_Protein(1);
+    proteins[1]->Add_Peptide(0);
+    peptides.back()->Add_Protein(2);
+    proteins[2]->Add_Peptide(0);
+    peptides.back()->Define_Probabilities(1, 0, 0);
+    peptides.back()->Define_Probabilities(0.5, 1, 0);
+    peptides.back()->Define_Probabilities(1, 2, 0);
+    peptides.push_back(new Peptide(1, "BBBBBBBBBBBB"));
+    peptides.back()->Add_Protein(2);
+    proteins[2]->Add_Peptide(1);
+    peptides.back()->Add_Protein(3);
+    proteins[3]->Add_Peptide(1);
+    peptides.back()->Define_Probabilities(1, 2, 0);
+    peptides.back()->Define_Probabilities(0.5, 3, 0);
+    std::vector<Pic*>* pics = new std::vector<Pic*>;
+    spectra.push_back(new Spectrum(0, pics));
+    spectra.push_back(new Spectrum(1, pics));
+    spectra.push_back(new Spectrum(2, pics));
+    spectra.push_back(new Spectrum(3, pics));
+    spectra.push_back(new Spectrum(4, pics));
+    spectra.push_back(new Spectrum(5, pics));
+    scores.push_back(new Score(0, 0, 0));
+    scores.push_back(new Score(0, 1, 0));
+    scores.push_back(new Score(0, 2, 0));
+    scores.push_back(new Score(0, 3, 0));
+    scores.push_back(new Score(1, 4, 0));
+    scores.push_back(new Score(1, 5, 0));
+}
