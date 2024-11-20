@@ -70,6 +70,8 @@ class Results_Analysis:
             self.ref = pd.merge(self.ref, self.upper_edges[["accession", "protein_id"]].drop_duplicates(), left_on="Accession", right_on="accession", how='left').drop('accession', axis=1)
         self.N_prot = len(self.upper_edges.groupby("accession"))
         self.protein_to_spectra = pd.merge(self.upper_edges, self.lower_edges, left_on="peptide_id", right_on="Peptide", how='left').drop("Peptide", axis=1)
+        self.protein_to_spectra = pd.merge(self.protein_to_spectra, self.sol[["accession", "abundance", "corrected abundance", "corrected abundance peptide", "corrected abundance detectability"]], how="left")
+        self.protein_to_spectra.loc[self.protein_to_spectra["abundance"].isna(), ["abundance", "corrected abundance", "corrected abundance peptide", "corrected abundance detectability"]] = 0
         self.protein_to_spectra["protein_prediction"] = self.protein_to_spectra["protein_id"].isin(self.sol['id'])
         self.protein_to_spectra["protein_truth"] = self.protein_to_spectra["protein_id"].isin(self.ref['protein_id'])
         self.protein_to_spectra["has_spectrum"] = self.protein_to_spectra["protein_id"].isin(self.protein_to_spectra.dropna()["protein_id"])
@@ -124,21 +126,21 @@ class Results_Analysis:
         prot_peptide_count = self.protein_to_spectra[["accession", "peptide_id"]].drop_duplicates().groupby("accession").count()
         protein_count = self.protein_to_spectra[["accession", "peptide_id"]].drop_duplicates().groupby("peptide_id").count()
         spec_peptide_count = self.protein_to_spectra[["Spectrum", "peptide_id"]].drop_duplicates().groupby("Spectrum").count()
-        for index, row in self.protein_to_spectra.dropna()[["accession", "peptide_id", "protein_prediction", "protein_truth", "prediction_category", "Prob"]].drop_duplicates().iterrows():
+        for index, row in self.protein_to_spectra.dropna()[["accession", "peptide_id", "protein_prediction", "protein_truth", "prediction_category", "Prob","abundance"]].drop_duplicates().iterrows():
             protein = row["accession"]
             peptide_id = int(row["peptide_id"])
             peptide = f"peptide_{peptide_id}"
             if protein not in G.nodes:
-                G.add_node(protein, level=1, label=protein, color=colors[row["prediction_category"]], label_1=protein, label_2=prot_peptide_count.loc[protein, "peptide_id"], predicted=row["protein_prediction"], truth=row["protein_truth"])
+                G.add_node(protein, level=1, label=protein, color=colors[row["prediction_category"]], label_1=protein, label_2=prot_peptide_count.loc[protein, "peptide_id"], label_3=row["abundance"], predicted=row["protein_prediction"], truth=row["protein_truth"])
             if peptide not in G.nodes:
-                G.add_node(peptide, level=2, label=peptide_id, color="blue", label_1=peptide_id, label_2=protein_count.loc[peptide_id, "accession"])
+                G.add_node(peptide, level=2, label=peptide_id, color="blue", label_1=peptide_id, label_2=protein_count.loc[peptide_id, "accession"], label_3=protein_count.loc[peptide_id, "accession"])
             G.add_edge(protein, peptide, color=row["Prob"], style="solid")
         for index, row in self.protein_to_spectra.dropna()[["peptide_id", "Spectrum", "Score", "Selected"]].drop_duplicates().iterrows():
             peptide = f"peptide_{int(row["peptide_id"])}"
             spectrum_id = int(row["Spectrum"])
             spectrum = f"spectrum_{int(row["Spectrum"])}"
             if spectrum not in G.nodes:
-                G.add_node(spectrum, level=3, label=spectrum_id, color="blue", label_1=spectrum_id, label_2=spec_peptide_count.loc[spectrum_id, "peptide_id"])
+                G.add_node(spectrum, level=3, label=spectrum_id, color="blue", label_1=spectrum_id, label_2=spec_peptide_count.loc[spectrum_id, "peptide_id"], label_3=spec_peptide_count.loc[spectrum_id, "peptide_id"])
             G.add_edge(peptide, spectrum, color=row["Score"], style=styles[row["Selected"]])
         print("graph created")
         self.select_nodes(G, select_func, add_prot)
@@ -428,214 +430,3 @@ class Model_Analyses:
         analyses = cls()
         analyses.Load_Analyses(file_name)
         return analyses
-
-
-# %%
-prefix = "HeLa_human_optimist"
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(8, 0, 1, 1, 0.00, 2)]:
-    # ref = pd.read_csv(data_dir / 'HeLa_ref.csv', sep=";")
-    ref = pd.read_csv(data_dir / "HeLa_old_model.csv", sep=";")
-    results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
-
-    print(f"==============================================================\nResults for psi1 : {psi1}, psi2 : {psi2}, threshold : {threshold}, max_edges : {max_edges}, min_detect : {min_detect}")
-    # results.print_stats_proteins()
-    # results.print_stats_scores()
-    # results.print_stats_true_proteins()
-    # results.print_stats_false_proteins()
-    # results.print_stats_predictions()
-    # results.print_results_info()
-    # results.print_category_stats()
-    print("==============================================================")
-# %%
-fig, axs = plt.subplots(2, 1, sharex=True, figsize=(7, 10))
-thresh, n_edge, n_prot, n_scores = [], [], [], []
-for (threshold, n_edges) in [(7, 2), (7, 3), (7, 4), (7, 10), (12, 2), (12, 3), (12, 4), (17, 2), (17, 3), (17, 4), (17, 10), (27, 2), (27, 3), (27, 4), (27, 10), (37, 2), (37, 3), (37, 4),
-                             (100, 4), (100, 5),
-                             (200, 4),
-                             (500, 4), (500, 10),
-                             (1000, 4),
-                             (2000, 4),
-                             (3000, 4), (3000, 10),
-                             (4000, 10),
-                             (5000, 4), (5000, 10), (5000, 20),
-                             (7500, 4), (7500, 10)]:
-    upper_edges = pd.read_csv(digestion_dir / "digestion_yeast+ups1_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
-    lower_edges = pd.read_csv(sol_dir / f"lower_edges{threshold}_{n_edges}.csv")
-    N_prot = len(upper_edges.groupby("accession"))
-
-    ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep=";")
-    sol = pd.read_csv(sol_dir / f"results_yeast_10fmol{threshold}_{n_edges}.csv")
-    ref = pd.merge(ref, upper_edges[["accession", "protein_id"]].drop_duplicates(), left_on="Accession", right_on="accession", how='left').drop('accession', axis=1)
-    results = Results_Analysis(upper_edges, lower_edges, ref, sol)
-    thresh.append(threshold)
-    n_edge.append(n_edges)
-    true_proteins = results.protein_to_spectra.loc[results.protein_to_spectra["protein_truth"]]
-    n_prot.append(len(true_proteins.dropna()["protein_id"].drop_duplicates()))
-    n_scores.append(len(results.lower_edges))
-colormap = {2: 'k', 3: 'k', 4: 'b', 5: 'b', 10: 'r', 20: 'g'}
-color = [colormap[i] for i in n_edge]
-axs[0].scatter(thresh, n_prot, c=color, marker='+')
-axs[0].set_xscale('log')
-axs[1].scatter(thresh, n_scores, c=color, marker='+')
-axs[1].set_xscale('log')
-plt.show()
-fig, axs = plt.subplots(1, 2, sharey=True, figsize=(14, 5))
-axs[0].scatter(n_prot, n_scores, c=thresh, marker='+')
-axs[1].scatter(n_prot, n_scores, c=color, marker='+')
-plt.show()
-# %%
-threshold = 2000
-n_edges = 10
-fig, axs = plt.subplots(2, 1, sharex=True, figsize=(7, 10))
-upper_edges = pd.read_csv(digestion_dir / "digestion_yeast+ups1_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
-lower_edges = pd.read_csv(sol_dir / f"lower_edges{threshold}_{n_edges}.csv")
-N_prot = len(upper_edges.groupby("accession"))
-
-ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep=";")
-sol = pd.read_csv(sol_dir / f"results_yeast_10fmol{threshold}_{n_edges}.csv")
-ref = pd.merge(ref, upper_edges[["accession", "protein_id"]].drop_duplicates(), left_on="Accession", right_on="accession", how='left').drop('accession', axis=1)
-results = Results_Analysis(upper_edges, lower_edges, ref, sol)
-thresh.append(threshold)
-n_edge.append(n_edges)
-true_proteins = results.protein_to_spectra.loc[results.protein_to_spectra["protein_truth"]]
-n_prot.append(len(true_proteins.dropna()["protein_id"].drop_duplicates()))
-n_scores.append(len(results.lower_edges))
-colormap = {2: 'k', 3: 'k', 4: 'b', 5: 'b', 10: 'r', 20: 'g'}
-color = [colormap[i] for i in n_edge]
-axs[0].scatter(thresh, n_prot, c=color, marker='+')
-axs[0].set_xscale('log')
-axs[1].scatter(thresh, n_scores, c=color, marker='+')
-axs[1].set_xscale('log')
-plt.show()
-fig, axs = plt.subplots(1, 2, sharey=True, figsize=(14, 5))
-axs[0].scatter(n_prot, n_scores, c=thresh, marker='+')
-axs[1].scatter(n_prot, n_scores, c=color, marker='+')
-plt.show()
-# %% Construction of GSI_Analyses
-Analyses = Model_Analyses()
-for (threshold, n_edges) in [(7, 2), (7, 3), (7, 4), (7, 10), (12, 2), (12, 3), (12, 4), (17, 2), (17, 3), (17, 4), (17, 10), (27, 2), (27, 3), (27, 4), (27, 10), (37, 2), (37, 3), (37, 4),
-                             (100, 4), (100, 5),
-                             (200, 4),
-                             (500, 4), (500, 10),
-                             (1000, 4),
-                             (2000, 4), (2000, 10),
-                             (3000, 4), (3000, 10),
-                             (4000, 10),
-                             (5000, 4), (5000, 10), (5000, 20),
-                             (7500, 4), (7500, 10)]:
-    upper_edges = pd.read_csv(digestion_dir / "digestion_yeast+ups1_result.csv")[["accession", "protein_id", "peptide_id", "Prob"]]
-    lower_edges = pd.read_csv(sol_dir / f"lower_edges{threshold}_{n_edges}.csv")
-    N_prot = len(upper_edges.groupby("accession"))
-
-    ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep=";")
-    sol = pd.read_csv(sol_dir / f"results_yeast_10fmol{threshold}_{n_edges}.csv")
-    ref = pd.merge(ref, upper_edges[["accession", "protein_id"]].drop_duplicates(), left_on="Accession", right_on="accession", how='left').drop('accession', axis=1)
-    results = Results_Analysis(upper_edges, lower_edges, ref, sol)
-
-    Analyses.Add_Analysis(results.analyse_df(dataset_name="UPS+Yeast", thresh=threshold, max_edges=n_edges))
-# %% Add a real data analysis
-prefix = "yeast_10fmol_nonoise"
-ref = pd.read_csv(data_dir / 'YEAST-Data-NonNormalized.csv', sep=";")
-for (threshold, max_edges, psi1, psi2, min_detect, detect_model) in [(60, 4, 1, 10, 0.00, 1)]:
-    results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, threshold=threshold, max_edges=max_edges)
-
-    Analyses.Add_Analysis(results.analyse_df())
-# %% Add a synthetic data analysis
-for i in range(1, 6):
-    prefix = f"test_synth{i}"
-    # for (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) in [(0.9, 1, 0.0, 1, 1, 10)]:
-    (min_detect, detect_model, spectra_error_rate, false_edges, psi1, psi2) = (0.00, 2, 0.0, 1, 1, 10)
-    for spectra_error_rate in [0.0]:  # , 0.2, 0.4, 0.6, 0.8, 0.9, 0.95]:
-        ref = pd.read_csv(root_dir / "ref_synthetic_data" / f"{prefix}_{detect_model}_{min_detect:.2f}_{spectra_error_rate:.1f}_{false_edges}_{round(psi1)}_{round(psi2)}.csv")
-        results = Results_Analysis(prefix, psi1, psi2, min_detect, detect_model, ref, spectra_error_rate=spectra_error_rate, false_edges=false_edges, synthetic_data=True)
-        # Analyses.Add_Analysis(results.analyse_df())
-# %%
-peptide_spectra = {}
-for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"], ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates().iterrows():
-    peptide_spectra[row["Spectrum"]] = row["Score"]
-count = 0
-for index, row in protein_to_spectra.loc[protein_to_spectra["Selected"] == False, ["peptide_id", "Spectrum", "Score"]].dropna().drop_duplicates().iterrows():
-    if peptide_spectra[row["Spectrum"]] < row["Score"]:
-        count += 1
-# %%
-pep_by_prot = results.protein_to_spectra[["accession", "peptide_id", "Prob"]].groupby("accession").count()["Prob"]
-prob_by_prot = results.protein_to_spectra[["accession", "peptide_id", "Prob"]].groupby("accession").sum()["Prob"]
-# %%
-# ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-WithAccess-b_proteins.csv", sep=";")[["accession", "PAI", "emPAI"]]
-ref_prot = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_peptides.csv", sep=";")[["Protein ID", "accession"]].drop_duplicates()
-ref_pai = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins_2.csv", sep=";")[["Protein ID", "PAI", "emPAI"]]
-ref = pd.merge(ref_prot, ref_pai, on="Protein ID").drop("Protein ID", axis=1)
-for index, row in ref.iterrows():
-    ref.loc[index, "accession"] = row["accession"].split("|")[1]
-# results = pd.read_csv(sol_dir / "results_HeLa_human_optimist_obj2_corr_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance", "corrected abundance"]]
-results = pd.read_csv(sol_dir / "results_HeLa_full_optimist_obj2_corr_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession", "abundance", "corrected abundance", "corrected abundance peptide", "corrected abundance detectability"]]
-# results = pd.merge(results, pep_by_prot, left_on="accession", right_index=True)
-# results = pd.merge(results, prob_by_prot, left_on="accession", right_index=True)
-results["em corrected abundance"] = 10**results["corrected abundance"] - 1
-results["em abundance"] = 10**results["abundance"] - 1
-results["em corrected abundance peptide"] = 10**results["corrected abundance peptide"] - 1
-results["em corrected abundance detectability"] = 10**results["corrected abundance detectability"] - 1
-ref_results = pd.merge(ref, results, on="accession")
-print(f"{len(ref_results)}/{len(results)}")
-# ref_results.drop(["accession", "Prob_x", "Prob_y"], axis=1).corr("spearman")
-ref_results.drop("accession", axis=1).corr("spearman")
-# %%
-# ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv", sep=";")[["accession"]]
-ref = pd.read_csv(data_dir / "scores" / "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_peptides.csv", sep=";")[["accession"]].drop_duplicates()
-for index, row in ref.iterrows():
-    ref.loc[index, "is_human"] = (row["accession"][-5:] == "HUMAN")
-    ref.loc[index, "accession"] = row["accession"].split("|")[1]
-results = pd.read_csv(sol_dir / "results_HeLa_full_optimist_2_8_0_1.0_1.0_0.00.csv", sep=",")[["accession"]]
-ref_results = pd.merge(ref, results, on="accession")
-ref_results
-# %%
-accession, human = [], []
-fasta = open(data_dir / "proteins" / "Sprot_2024-02-05.fasta")
-for line in fasta.readlines():
-    if line[0] == ">":
-        accession.append(line.split()[0].split("|")[1])
-        human.append(line.split()[0][-5:] == "HUMAN")
-fasta.close()
-ref2 = pd.DataFrame.from_dict({"accession": accession, "is_human": human})
-ref2_results = pd.merge(ref2, results, on="accession")
-ref2_results
-# %%
-fig = plt.figure(figsize=(15, 15))
-ax1 = plt.subplot(221)
-ax1.set_xlabel("PAI")
-ax1.set_ylabel("GSI")
-ax2 = plt.subplot(222, sharey=ax1)
-ax2.set_xlabel("emPAI")
-ax2.set_ylabel("GSI")
-ax2.set_xscale("log")
-ax3 = plt.subplot(223, sharex=ax1)
-ax3.set_xlabel("PAI")
-ax3.set_ylabel("emGSI")
-ax3.set_yscale("log")
-ax4 = plt.subplot(224, sharex=ax2, sharey=ax3)
-ax4.set_xlabel("emPAI")
-ax4.set_ylabel("emGSI")
-
-# ax1.scatter("PAI", "abundance", data=ref_results, c="tab:red", label="Abundance", marker="+", s=15)
-# ax1.scatter("PAI", "corrected abundance", data=ref_results, c="tab:green", label="corrected abundance", marker="+", s=15)
-ax1.scatter("PAI", "corrected abundance peptide", data=ref_results, c="tab:blue", label="corrected abundance peptide", marker="+", s=15)
-ax1.scatter("PAI", "corrected abundance detectability", data=ref_results, c="tab:orange", label="corrected abundance detect", marker="+", s=15)
-ax1.legend()
-
-# ax2.scatter("emPAI", "abundance", data=ref_results, c="tab:red", marker="+", s=15)
-# ax2.scatter("emPAI", "corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
-ax2.scatter("emPAI", "corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
-ax2.scatter("emPAI", "corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
-
-# ax3.scatter("PAI", "em abundance", data=ref_results, c="tab:red", marker="+", s=15)
-# ax3.scatter("PAI", "em corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
-ax3.scatter("PAI", "em corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
-ax3.scatter("PAI", "em corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
-
-# ax4.scatter("emPAI", "em abundance", data=ref_results, c="tab:red", marker="+", s=15)
-# ax4.scatter("emPAI", "em corrected abundance", data=ref_results, c="tab:green", marker="+", s=15)
-ax4.scatter("emPAI", "em corrected abundance peptide", data=ref_results, c="tab:blue", marker="+", s=15)
-ax4.scatter("emPAI", "em corrected abundance detectability", data=ref_results, c="tab:orange", marker="+", s=15)
-plt.show()
-
-# %%

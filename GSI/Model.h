@@ -177,7 +177,10 @@ public:
     *
     */
     void In_Silico_Digestion_2(std:: string sequence_file_name, int minimum_number_of_amino_acids = 7 ,int maximum_number_of_amino_acids = 25);
-
+    
+    /*
+    * Génère un fichier au format FASTA utilisable par AP3 pour le calcul de la détectabilité.
+    */
     void AP3_Fasta();
 
     /*
@@ -235,9 +238,6 @@ public:
     * Charge les peptides et les arêtes protéines-peptides.
     */
     void Define_Probabilities_2(const std::string file_name, const float min_proba = 0.0, bool L2I = false);
-    /*
-    *
-    */
 
     /*
     * Charge le fichier de spectres en param�tre au format ms2/msp
@@ -306,9 +306,13 @@ public:
     * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle
     */
     void Load_Scores_SpecOMS(const std::string file_name);
-
+    /*
+    * Charge les arêtes spectres-peptides calculées par Prospect dans le modèle.
+    */
     void Load_Scores_Prospect(const std::string file_name, const int min_length = 7, const int max_length = 25, const int min_pics = 6);
-
+    /*
+    * Charge les arêtes spectres-peptides calculées par X!Tandem dans le modèle. Le fichier proteins_file_name doit contenir les accessions des protéines de chaque sous-groupe.
+    */
     void Load_Scores_XTandem(const std::string file_name, const float max_e_value = 0.0, const std::string proteins_file_name = "");
 
     void Pre_Solve(const float Pmin = 0.5);

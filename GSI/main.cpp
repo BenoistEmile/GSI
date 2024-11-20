@@ -86,6 +86,7 @@ int main() {
 		std::cout << duration_tot << std::endl;
 	// model.Solve(1, 10);
 		std::cout << "model solved" << std::endl;
+		std::cout << model.Get_Solution().abundances.size() << std::endl;
 
 		// model.Print_Solution(true);
 
@@ -95,7 +96,7 @@ int main() {
 
 	// std::string file_name = "ova_SpecOMS_test_2_2_8_0_1.0_10.0_0.00";
 		// std::string file_name = "OVA_test_2_8_0_" + fmt::format("{0:.1f}", params.first) + "_" + fmt::format("{0:.1f}", params.second) + "_0.00";
-		std::string file_name = "HeLa_full_optimist_obj2_corr_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_0.00";
+		std::string file_name = "HeLa_full_optimist_no_thresh_2_8_0_" + fmt::format("{0:.1f}", std::get<0>(params)) + "_" + fmt::format("{0:.1f}", std::get<1>(params)) + "_0.00";
 
 		model.Save_Solution("results_" + file_name, true, true, true, true);
 
@@ -123,7 +124,6 @@ int main() {
 		// model.Save_Solution(output_file, false, false, true);
 		// model.Save_Solution("results_" + file_name, true, true, true, true);
 		model.Clear(false, false, false, false, true);
-		std::cout << "here" << std::endl;
 	}
 
 	return 0;
