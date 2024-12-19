@@ -9,20 +9,29 @@ def main(args):
     input_file_name = args.input_file_name
     FDR_rate = args.FDR_rate
     input_df = pd.read_csv(score_dir / f"{input_file_name}.csv", delimiter=";")
-    input_df.sort_values(["score after specfit"], inplace=True, ascending=False)
+    input_df.sort_values(["score after specfit", "score before specfit", "presence in decoy database"], inplace=True, ascending=False)
     input_df.reset_index(inplace=True, drop=True)
     last_FDR = 0
     FDR_cutoff_index = 0
-    for index, row in input_df.iterrows(): # Computation of the FDR for every PSM
+    index_last_decoy = 0
+    # def set_FDR(index_last_step, index, last_FDR)
+    for index, row in input_df.iterrows():  # Computation of the FDR for every PSM
         if row["presence in target database"] == "target":
             last_FDR = last_FDR*index / (index + 1)
-            input_df.loc[index, "FDR"] = last_FDR
         else:
             last_FDR = (last_FDR*index + 1) / (index + 1)
-            input_df.loc[index, "FDR"] = last_FDR
+            if index + 1 == len(input_df):
+                input_df.loc[index_last_decoy:index, "FDR"] = last_FDR
+                index_last_decoy = index
+            elif input_df.loc[index+1, "presence in target database"] == "target":
+                input_df.loc[index_last_decoy:index, "FDR"] = last_FDR
+                index_last_decoy = index
         if last_FDR > FDR_rate and FDR_cutoff_index == 0:
             FDR_cutoff_index = index - 1
-    input_df.loc[input_df["presence in decoy database"] == "target"][:FDR_cutoff_index].to_csv(score_dir / f"{input_file_name}_FDR_{FDR_rate}.csv", sep=";")
+    if FDR_cutoff_index == 0:
+        input_df.loc[input_df["presence in decoy database"] == "target"].to_csv(score_dir / f"{input_file_name}_FDR_{FDR_rate}.csv", sep=";")
+    else:
+        input_df.loc[input_df["presence in decoy database"] == "target"][:FDR_cutoff_index].to_csv(score_dir / f"{input_file_name}_FDR_{FDR_rate}.csv", sep=";")
 
     fig, ax = plt.subplots(1, 1)
     (n, bins, patches) = ax.hist(input_df.loc[input_df["presence in decoy database"] == "target", "score after specfit"], bins=75, alpha=0.5, label="True")
