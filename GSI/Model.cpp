@@ -54,10 +54,10 @@ void Model::Clear(bool clear_proteins, bool clear_peptides, bool clear_spectra, 
 }
 
 void Model::Correct_Abundances() {
-    std::unordered_map<std::size_t, unsigned int> expected_abundances;
+    std::unordered_map<std::size_t, unsigned int> expected_abundances; // Expected abundance for each peptide.
     float total_detect;
     float protein_detect;
-    for (auto& identification: solution.identifications) {
+    for (auto& identification: solution.identifications) { // Filling of expected_abundances
         auto pos = expected_abundances.find(identification->peptide);
         if (pos == expected_abundances.end()) {
             expected_abundances[identification->peptide] = 1;
@@ -66,9 +66,9 @@ void Model::Correct_Abundances() {
             expected_abundances[identification->peptide]++;
         }
     }
-    for (auto& expected_abundance: expected_abundances) {
+    for (auto& expected_abundance: expected_abundances) { // Repartition of expected abundance between identified proteins
         total_detect = 0;
-        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) {
+        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) { // Computation of peptide total detectability
             if (solution.abundances.find(protein.first) == solution.abundances.end()) {
                 continue;
             }
@@ -76,7 +76,7 @@ void Model::Correct_Abundances() {
                 total_detect += iter;
             }
         }
-        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) {
+        for (auto& protein: this->Get_Peptide(expected_abundance.first).Get_Proteins()) { // Computation of raw corrected abundance for each identified protein
             if (solution.abundances.find(protein.first) == solution.abundances.end()) {
                 continue;
             }
@@ -93,7 +93,7 @@ void Model::Correct_Abundances() {
             }
         }
     }
-    for (auto& corr_abundance: solution.corr_abundances) {
+    for (auto& corr_abundance: solution.corr_abundances) { // Computation of 2 corrected abundances (/N_pep and /Total_detect)
         total_detect = 0;
         std::get<1>(corr_abundance.second) = std::get<0>(corr_abundance.second);
         std::get<2>(corr_abundance.second) = std::get<0>(corr_abundance.second);
@@ -108,6 +108,12 @@ void Model::Correct_Abundances() {
             }
         }
         std::get<2>(corr_abundance.second) /= total_detect;
+    }
+    for (auto& protein : solution.abundances) {
+        auto pos = solution.corr_abundances.find(protein.first);
+        if (pos == solution.corr_abundances.end()) {
+            std::cout << "Protein " << protein.first << " not corrected.";
+        }
     }
 }
 

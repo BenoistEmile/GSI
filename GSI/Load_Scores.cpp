@@ -115,6 +115,9 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                 if (index2 != raw_accession.npos) {
                     accessions.push_back(raw_accession.substr(index1, index2 - index1));
                 }
+                else {
+                    accessions.push_back(raw_accession.substr(index1, index2));
+                }
             }
             for (int i = 0; i < sequence.length(); i++) {
                 if (sequence[i] == '(') {
@@ -140,7 +143,11 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                 }
             }
             if (not found_peptide) {
-                std::cout << spectrum_id << ", " << sequence << std::endl;
+                std::cout << spectrum_id << ", " << sequence;
+                for (std::string accession : accessions) {
+                    std::cout << ", " << accession;
+                }
+                std::cout << std::endl;
             }
         }
         Load_Spectrum_Scores(spectra_scores);
@@ -305,12 +312,13 @@ void Model::Load_Scores_Prospect(const std::string file_name, const int min_leng
             // }
         }
         for (auto& spectrum_scores : spectra_scores) {
-            scores_sum = 0;
+            //scores_sum = 0;
+            //for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
+            //    scores_sum += std::get<1>(*psm);
+            //}
             for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
-                scores_sum += std::get<1>(*psm);
-            }
-            for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
-                scores.push_back(new Score(std::get<0>(*psm), spectrum_scores.first, 1.0 - ((double)std::get<1>(*psm) / scores_sum)));
+                //scores.push_back(new Score(std::get<0>(*psm), spectrum_scores.first, 1.0 - ((double)std::get<1>(*psm) / scores_sum)));
+                scores.push_back(new Score(std::get<0>(*psm), spectrum_scores.first, std::get<1>(*psm)));
             }
         }
     }
