@@ -6,7 +6,7 @@
 
 //__________________________________________________________________________________________________________
 
-int Model::Solve(const float psi1, const float psi2) {
+int Model::Solve(const float psi1, const float psi2, const float psi3) {
 
 	std::clock_t c_start = std::clock();
 
@@ -232,7 +232,7 @@ int Model::Solve(const float psi1, const float psi2) {
 		objective += psi2 * X[h] * useful_scores[h]->score;
 	}
 	for (std::size_t i = 0; i < n; i++) {
-		objective += Q[i];
+		objective += psi3 * Q[i];
 	}
 
 	model.add(IloMinimize(env, objective));

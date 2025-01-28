@@ -320,7 +320,7 @@ public:
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     */
-    int Solve(const float psi1 = 0.5f ,const float psi2 = 0.5f);
+    int Solve(const float psi1 = 0.5f, const float psi2 = 0.5f, const float psi3 =  0.5f);
     /*
     * Calcule une solution pour le mod�le courant. psi1 correspond au coefficient de l'objectif sur les Deltas, psi2 correspond au coefficient de l'objectif sur les ar�tes spectre-peptide.
     * Sauvegarde des informations (paramètres, durée d'exécution) dans le fichier fourni.

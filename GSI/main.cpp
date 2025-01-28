@@ -72,15 +72,15 @@ int main() {
 
 	// model.Pre_Solve(0.9);
 
-	std::set<std::pair<float, float>> params_set = {{1, 1}};
+	std::set<std::tuple<float, float, float>> params_set = {{1, 1, 1}};
 	for (auto& params : params_set) {
 
-		std::cout << std::get<0>(params) << ", " << std::get<1>(params) << std::endl;
+		std::cout << std::get<0>(params) << ", " << std::get<1>(params) << ", " << std::get<2>(params) << std::endl;
 
 	// unsigned int count;
 	// for (float i = 0.0; i < 1.001; i += 0.1) {
 		auto start = std::chrono::high_resolution_clock::now();
-		model.Solve(std::get<0>(params), std::get<1>(params));
+		//model.Solve(std::get<0>(params), std::get<1>(params), std::get<2>(params));
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration_tot = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		std::cout << duration_tot << std::endl;
