@@ -303,9 +303,13 @@ public:
     */
     void Compute_Score_SpecOMS(std::ofstream& output_file, unsigned int minimum_number_of_masses = 0, unsigned int maximum_number_of_masses = 99999, int accuracy = 2, unsigned int number_of_copies = 2, unsigned int threshold = 0, unsigned int maximum_number_of_edges = 0);
     /*
-    * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle
+    * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle. Le score utilisé est le SPC.
     */
     void Load_Scores_SpecOMS(const std::string file_name);
+    /*
+    * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle. Le score utilisé est la FDR.
+    */
+    void Load_FDR_SpecOMS(const std::string file_name);
     /*
     * Charge les arêtes spectres-peptides calculées par Prospect dans le modèle.
     */
@@ -314,6 +318,14 @@ public:
     * Charge les arêtes spectres-peptides calculées par X!Tandem dans le modèle. Le fichier proteins_file_name doit contenir les accessions des protéines de chaque sous-groupe.
     */
     void Load_Scores_XTandem(const std::string file_name, const float max_e_value = 0.0, const std::string proteins_file_name = "");
+    /*
+    * Normalise et charge les scores déterminés par les autres fonctions dans le modèle.
+    */
+    void Load_Spectrum_Scores(std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*> &spectra_scores);
+    /*
+    * Construit la map spectra_scores (utilisée dans les fonction Load_Scores) pour un peptide donné. Renvoie true si le PSM 
+    */
+    bool Build_Spectra_Scores(std::string accession, std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>& spectra_scores, std::string sequence, std::size_t spectrum_id, int shared_masses);
 
     void Pre_Solve(const float Pmin = 0.5);
 

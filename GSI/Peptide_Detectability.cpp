@@ -18,7 +18,8 @@ void Model::AP3_Fasta() {
 
 void Model::Peptide_Detectability(std::string env_name, std::string digestion_file_name) const {
     std::filesystem::path curr_path = std::filesystem::current_path();
-    std::filesystem::path script_path = std::filesystem::path("~/stage/code/DbyDeep-main/dbydeep_model.py");
+    //std::filesystem::path script_path = std::filesystem::path("~/stage/code/DbyDeep-main/dbydeep_model.py");
+    std::filesystem::path script_path = std::filesystem::path("C:\\Users\\berthier-a-1\\code\\DbyDeep\\dbydeep_model.py");
     std::filesystem::path data_path = curr_path / "data" / "digestion" / digestion_file_name;
     data_path += ".csv";
     std::string command = "conda run -n " + env_name
@@ -40,7 +41,8 @@ void Model::Peptide_Detectability(int detectability_model, float min_detect, int
     this->In_Silico_Digestion_2("digestion_file", minimum_number_of_amino_acids, maximum_number_of_amino_acids);
     switch (detectability_model) {
         case 1: {
-            std::string command = "conda run -n detectability python ./python/DbyDeep_script.py";
+            //std::string command = "conda run -n detectability python ./python/DbyDeep_script.py";
+            std::string command = "conda run -n env_dbydeep python ./python/DbyDeep_script.py";
             return_code = system(command.c_str());
             if (return_code != 0) {
                 throw "An error occured during peptide detectability prediction : " + return_code;
@@ -63,7 +65,8 @@ void Model::Peptide_Detectability(int detectability_model, float min_detect, int
             // if (return_code != 0) {
             //     throw "An error occured during peptide detectability prediction : " + return_code;
             // }
-            std::string command = "conda run -n detectability python ./python/ap3_script.py";
+            //std::string command = "conda run -n detectability python ./python/ap3_script.py";
+            std::string command = "conda run -n env_dbydeep python ./python/ap3_script.py";
             return_code = system(command.c_str());
             if (return_code != 0) {
                 throw "An error occured during detectability results processing : " + return_code;

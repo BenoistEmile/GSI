@@ -1,6 +1,10 @@
 import argparse
 from pathlib import Path
 import pandas as pd
+# import dbydeep_model
+
+import sys
+sys.path.append((Path.cwd().parent.parent / "DbyDeep").__str__())
 import dbydeep_model
 
 if __name__ == "__main__":
@@ -8,7 +12,7 @@ if __name__ == "__main__":
     opt = argparse.Namespace(retrain_flag = False,
                               data_path = gsi_path / 'data' / 'digestion' / 'digestion_file.csv',
                               model_path = gsi_path / 'python' / 'DbyDeep.h5',
-                              save_path = (gsi_path / 'data' / 'digestion').absolute().as_posix() + '/',
+                              save_path = (gsi_path / 'data' / 'digestion').absolute().as_posix() + "/",
                               job_name = "output_DbyDeep")
     print(opt)
     # dbydeep_model.main(opt)

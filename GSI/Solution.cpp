@@ -38,7 +38,7 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
     std::ofstream output_file;
     std::filesystem::path file_path = std::filesystem::current_path() / "solution" / file_name;
     file_path += ".csv";
-    if (!fileExists(file_path) || overwrite) {
+    if (!fileExists(file_path.string()) || overwrite) {
         output_file.open(file_path);
         output_file << "protein_id,abundance" << std::endl;
         if (save_proteins) {
@@ -75,7 +75,7 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
     prot_file_path += ".csv";
     std::filesystem::path ident_file_path = std::filesystem::current_path() / "solution" / "ident_";
     ident_file_path += file_name + ".csv";
-    if ((!fileExists(prot_file_path) || overwrite) && save_proteins) {
+    if ((!fileExists(prot_file_path.string()) || overwrite) && save_proteins) {
         prot_output_file.open(prot_file_path);
         prot_output_file << "id,accession,abundance";
         if (!this->corr_abundances.empty()) {
@@ -95,7 +95,7 @@ void Solution::Save(std::vector<Spectrum*> spectra, const std::string file_name,
     else {
         std::cout << "ERROR : There already is a file named : " << file_name << std::endl;
     }
-    if ((!fileExists(ident_file_path) || overwrite) && save_ident) {
+    if ((!fileExists(ident_file_path.string()) || overwrite) && save_ident) {
         ident_output_file.open(ident_file_path);
         ident_output_file << "peptide,spectrum" << std::endl;
         for (const Identification* identification : identifications) {
