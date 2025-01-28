@@ -51,24 +51,31 @@ int main() {
 
 	// std::ofstream output_file = model.Open_Output_File("result");
 
+	model.Load_Proteins_Accession("iPRG2016_shuff.fasta");
 	// model.Load_Proteins_Accession("Sprot_Gallus_gallus_2021_04_13.fasta");
-	model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
-	// model.Load_Proteins_Accession("Sprot_Tax9606_human_2023_03_22.fasta");
+	//model.Load_Proteins_Accession("Sprot_2024-02-05.fasta");
+	 //model.Load_Proteins_Accession("Sprot_Tax9606_human_2023_03_22.fasta");
+	//model.Load_Proteins_Accession("cyto_c+e_coli2.fasta");
 	// model.Load_test();
 	std::cout << "proteins loaded : " << model.Number_Of_Proteins() << std::endl;
 
-	model.Peptide_Detectability(2, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
+	model.Peptide_Detectability(1, 0.00, 7, 25, false); // if SpecOMS is used, L2I must be true
 
 	std::cout << "Peptide detectability computed" << std::endl;
 	std::cout << "Peptides digested : " << model.Number_Of_Peptides() << std::endl;
 
 	// model.Load_Spectra("QX001127_OVA.mgf", 50);
-	model.Load_Spectra("QX002755_HeLa.mgf", 50);
+	//model.Load_Spectra("QX002755_HeLa.mgf", 50);
+	//model.Load_Spectra("QX003188.mgf", 50);
+	model.Load_Spectra("mixtureArep1.mgf", 50);
 	std::cout << "spectra loaded : " << model.Number_Of_Spectra() << std::endl;
 
-	// model.Load_Scores_SpecOMS("specoms_output_HeLa.csv");
-	// model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
-	model.Load_Scores_XTandem("QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05.csv", 0.0, "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv");
+	 //model.Load_Scores_SpecOMS("specoms_output_HeLa_full_no_decoy.csv");
+	 //model.Load_Scores_SpecOMS("QX002755_HeLa_MSFragger.csv");
+	 //model.Load_Scores_SpecOMS("specoms_output_iprg2016_B1_random_full_FDR_0.005.csv");
+	model.Load_Scores_SpecOMS("EPIFANY_PSM_A_wQtag.csv");
+	 //model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
+	//model.Load_Scores_XTandem("QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05.csv", 0.0, "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;
 
 	// model.Pre_Solve(0.9);
