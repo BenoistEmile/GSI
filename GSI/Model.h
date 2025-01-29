@@ -305,6 +305,7 @@ public:
     /*
     * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle. Le score utilisé est le SPC.
     */
+    template<bool int_score>
     void Load_Scores_SpecOMS(const std::string file_name);
     /*
     * Charge les spectres et les arêtes spectre-peptide calculées par SpecOMS dans le modèle. Le score utilisé est la FDR.
@@ -319,13 +320,20 @@ public:
     */
     void Load_Scores_XTandem(const std::string file_name, const float max_e_value = 0.0, const std::string proteins_file_name = "");
     /*
-    * Normalise et charge les scores déterminés par les autres fonctions dans le modèle.
+    * Normalise et charge dans le modèle les scores SPC.
     */
-    void Load_Spectrum_Scores(std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*> &spectra_scores);
+    template<typename T>
+    void Load_Spectrum_Scores_Classic_Norm(std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*> &spectra_scores);
     /*
-    * Construit la map spectra_scores (utilisée dans les fonction Load_Scores) pour un peptide donné. Renvoie true si le PSM 
+    * Charge dans le modèle les scores des PSMs.
     */
-    bool Build_Spectra_Scores(std::string accession, std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>& spectra_scores, std::string sequence, std::size_t spectrum_id, int shared_masses);
+    template<typename T>
+    void Load_Spectrum_Scores_No_Norm(std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*>& spectra_scores);
+    /*
+    * Construit la map spectra_scores (utilisée dans les fonction Load_Scores) pour un peptide donné. Renvoie true si le PSM a ete identifie.
+    */
+    template<typename T>
+    bool Build_Spectra_Scores(std::string accession, std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*>& spectra_scores, std::string sequence, std::size_t spectrum_id, T score);
 
     void Pre_Solve(const float Pmin = 0.5);
 

@@ -73,7 +73,8 @@ int main() {
 	 //model.Load_Scores_SpecOMS("specoms_output_HeLa_full_no_decoy.csv");
 	 //model.Load_Scores_SpecOMS("QX002755_HeLa_MSFragger.csv");
 	 //model.Load_Scores_SpecOMS("specoms_output_iprg2016_B1_random_full_FDR_0.005.csv");
-	model.Load_Scores_SpecOMS("EPIFANY_PSM_A_wQtag.csv");
+	model.Load_Scores_SpecOMS<false>("EPIFANY_PSM_A_wQtag.csv");
+	//model.Load_Scores_SpecOMS<false>("specoms_output_cytoc_run_abrthr.csv");
 	 //model.Load_Scores_XTandem("QX002755_Hela-WithAccess-b.csv", 0.0, "QX002755_Hela-WithAccess-b_proteins.csv");
 	//model.Load_Scores_XTandem("QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05.csv", 0.0, "QX002755_Hela-classical-Evalue-param_Sprot-2024-02-05_proteins.csv");
 	std::cout << "scores computed : " << model.Number_Of_Scores() << std::endl;

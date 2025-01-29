@@ -58,18 +58,20 @@ void Model::Load_Scores(const std::string file_name, std::vector<Score*>(parser)
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
     }
 }
-
+template<bool int_score>
 void Model::Load_Scores_SpecOMS(const std::string file_name) {
     std::ifstream file(std::filesystem::current_path() / "data" / "scores" / file_name);
     if (file) {
+        using score_type = std::conditional<int_score, int, float>::type;
         bool first_line = true;
         std::vector<std::string> row, accessions;
         std::string word, line, sequence, raw_accession;
-        int index_spectrum, index_peptide, index_shared_masses, shared_masses, index_proteins;
-        unsigned int scores_sum, count, len_to_remove;
-        std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*> spectra_scores;
-        std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>::const_iterator spectrum_scores;
-        std::unordered_map<std::size_t, int>::iterator same_peptide;
+        int index_spectrum, index_peptide, index_shared_masses, index_proteins;
+        score_type score;
+        unsigned int len_to_remove;
+        std::unordered_map<std::size_t, std::unordered_map<std::size_t, score_type>*> spectra_scores;
+        typename std::unordered_map<std::size_t, std::unordered_map<std::size_t, score_type>*>::const_iterator spectrum_scores;
+        typename std::unordered_map<std::size_t, score_type>::iterator same_peptide;
         std::size_t spectrum_id, index1, index2;
         while (getline(file, line)) {
             row.clear();
@@ -132,11 +134,16 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                 }
             }
             spectrum_id = std::stoi(row[index_spectrum]);
-            shared_masses = std::stoi(row[index_shared_masses]);
+            if (int_score) {
+                score = std::stoi(row[index_shared_masses]);
+            }
+            else {
+                score = std::stof(row[index_shared_masses]);
+            }
             bool found_peptide = false;
             for (std::string accession: accessions) {
                 if (proteins_accession.contains(accession)) {
-                    found_peptide = Build_Spectra_Scores(accession, spectra_scores, sequence, spectrum_id, shared_masses);
+                    found_peptide = Build_Spectra_Scores(accession, spectra_scores, sequence, spectrum_id, score);
                 }
                 if (found_peptide) {
                     break;
@@ -150,7 +157,12 @@ void Model::Load_Scores_SpecOMS(const std::string file_name) {
                 std::cout << std::endl;
             }
         }
-        Load_Spectrum_Scores(spectra_scores);
+        if (int_score) {
+            Load_Spectrum_Scores_Classic_Norm(spectra_scores);
+        }
+        else {
+            Load_Spectrum_Scores_No_Norm(spectra_scores);
+        }
     }
     else {
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
@@ -237,7 +249,7 @@ void Model::Load_FDR_SpecOMS(const std::string file_name) {
                 std::cout << spectrum_id << ", " << sequence << std::endl;
             }
         }
-        Load_Spectrum_Scores(spectra_scores);
+        Load_Spectrum_Scores_Classic_Norm(spectra_scores);
     }
     else {
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
@@ -435,15 +447,17 @@ void Model::Load_Scores_XTandem(const std::string file_name, const float max_e_v
                 std::cout << spectrum_id << ", " << sequence << std::endl;
             }
         }
-        Load_Spectrum_Scores(spectra_scores);
+
+        Load_Spectrum_Scores_Classic_Norm(spectra_scores);
     }
     else {
         std::cout << "ERROR : Impossible to open the file named : " << file_name << std::endl;
     }
 }
 
-void Model::Load_Spectrum_Scores(std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*> &spectra_scores) {
-    unsigned int scores_sum = 0;
+template<typename T>
+void Model::Load_Spectrum_Scores_Classic_Norm(std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*> &spectra_scores) {
+    T scores_sum = 0;
     for (auto& spectrum_scores : spectra_scores) {
         scores_sum = 0;
         for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
@@ -455,25 +469,35 @@ void Model::Load_Spectrum_Scores(std::unordered_map<std::size_t, std::unordered_
     }
 }
 
-bool Model::Build_Spectra_Scores(std::string accession, std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>& spectra_scores, std::string sequence, std::size_t spectrum_id, int shared_masses) {
+template<typename T>
+void Model::Load_Spectrum_Scores_No_Norm(std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*>& spectra_scores) {
+    for (auto& spectrum_scores : spectra_scores) {
+        for (auto psm = spectrum_scores.second->begin(); psm != spectrum_scores.second->end(); psm++) {
+            scores.push_back(new Score(std::get<0>(*psm), spectrum_scores.first, std::get<1>(*psm)));
+        }
+    }
+}
+
+template<typename T>
+bool Model::Build_Spectra_Scores(std::string accession, std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*>& spectra_scores, std::string sequence, std::size_t spectrum_id, T score) {
     bool found_peptide = false;
-    std::unordered_map<std::size_t, std::unordered_map<std::size_t, int>*>::const_iterator spectrum_scores;
-    std::unordered_map<std::size_t, int>::iterator same_peptide;
+    typename std::unordered_map<std::size_t, std::unordered_map<std::size_t, T>*>::const_iterator spectrum_scores;
+    typename std::unordered_map<std::size_t, T>::iterator same_peptide;
     for (std::size_t peptide_id : this->Get_Protein(accession).Get_Peptides()) {
         if (Same_Peptide(this->Get_Peptide(peptide_id).Get_Sequence(), sequence, 7, 25, 3)) {
             found_peptide = true;
             spectrum_scores = spectra_scores.find(spectrum_id);
             if (spectrum_scores == spectra_scores.end()) {
-                spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, int>;
-                spectra_scores.at(spectrum_id)->emplace(peptide_id, shared_masses);
+                spectra_scores[spectrum_id] = new std::unordered_map<std::size_t, T>;
+                spectra_scores.at(spectrum_id)->emplace(peptide_id, score);
             }
             else {
                 same_peptide = spectrum_scores->second->find(peptide_id);
                 if (same_peptide == spectrum_scores->second->end()) {
-                    spectrum_scores->second->emplace(peptide_id, shared_masses);
+                    spectrum_scores->second->emplace(peptide_id, score);
                 }
-                else if (shared_masses > same_peptide->second) {
-                    same_peptide->second = shared_masses;
+                else if (score > same_peptide->second) {
+                    same_peptide->second = score;
                 }
             }
             break;
@@ -481,3 +505,6 @@ bool Model::Build_Spectra_Scores(std::string accession, std::unordered_map<std::
     }
     return found_peptide;
 }
+
+template void Model::Load_Scores_SpecOMS<true>(const std::string file_name);
+template void Model::Load_Scores_SpecOMS<false>(const std::string file_name);
