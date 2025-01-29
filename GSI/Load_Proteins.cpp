@@ -91,7 +91,7 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
         std::size_t index1, index2;
         while (getline(file, line)) {
             if (line[0] == '>') {
-                if (Is_Valid_Sequence(sequence) && (accession.substr(0, 6) != "DECOY_")) {   // /!\ Ne charge pas les prot�ines DECOY pr�sentes dans le fichier FASTA.
+                if (Is_Valid_Sequence(sequence) && (accession.substr(0, 6) != "DECOY_")) {   // /!\ Ne charge pas les proteines DECOY presentes dans le fichier FASTA.
                     proteins_accession[accession] = proteins.size();
                     proteins.push_back(new Protein(proteins.size(), sequence, accession));
                 }
@@ -108,7 +108,7 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
                     index2 = line.find(" ", index1);
                 }
                 //if (index2 != line.npos) {
-                accession = line.substr(index1, index2 - index1);   // /!\ Si l'accession n'est pas d�limit�e par |, toute la description sera charg�e.
+                accession = line.substr(index1, index2 - index1);   // /!\ Si l'accession n'est pas delimitee par |, toute la description sera chargee.
                 //}
                 //else {
                 //    accession = "NA";
@@ -118,7 +118,7 @@ void Model::Load_Proteins_Accession(const std::string file_name) {
                 sequence += line;
             }
         }
-        if (Is_Valid_Sequence(sequence) && (accession.substr(0, 6) != "DECOY_")) {   // /!\ Ne charge pas les prot�ines DECOY pr�sentes dans le fichier FASTA.
+        if (Is_Valid_Sequence(sequence) && (accession.substr(0, 6) != "DECOY_")) {   // /!\ Ne charge pas les proteines DECOY presentes dans le fichier FASTA.
             proteins_accession[accession] = proteins.size();
             proteins.push_back(new Protein(proteins.size(), sequence, accession));
         }
